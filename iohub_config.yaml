@@ -1,0 +1,39 @@
+!!python/unicode data_store: {!!python/unicode enable: false, !!python/unicode filename: !!python/unicode events,
+  !!python/unicode flush_interval: 32, !!python/unicode multiple_experiments: false}
+!!python/unicode global_event_buffer: 2048
+!!python/unicode monitor_devices:
+- !!python/unicode Display:
+    !!python/unicode default_eye_distance: {!!python/unicode surface_center: 550,
+      !!python/unicode unit_type: !!python/unicode mm}
+    !!python/unicode device_number: 0
+    !!python/unicode name: !!python/unicode display
+    !!python/unicode override_using_psycho_settings: false
+    !!python/unicode physical_dimensions: {!!python/unicode height: 281, !!python/unicode unit_type: !!python/unicode mm,
+      !!python/unicode width: 500}
+    !!python/unicode psychopy_monitor_name: !!python/unicode MacBookRetinaDisplay
+    !!python/unicode reporting_unit_type: !!python/unicode pix
+- !!python/unicode Keyboard:
+    !!python/unicode event_buffer_length: 256
+    !!python/unicode monitor_event_types: [!!python/unicode KeyboardPressEvent]
+    !!python/unicode name: !!python/unicode keyboard
+    !!python/unicode report_auto_repeat_press_events: false
+- !!python/unicode Mouse:
+    !!python/unicode auto_report_events: true
+    !!python/unicode device_number: 0
+    !!python/unicode enable: true
+    !!python/unicode event_buffer_length: 256
+    !!python/unicode firmware_version: !!python/unicode N/A
+    !!python/unicode hardware_version: !!python/unicode N/A
+    !!python/unicode manufacture_date: !!python/unicode DD-MM-YYYY
+    !!python/unicode manufacturer_name: !!python/unicode N/A
+    !!python/unicode model_name: !!python/unicode N/A
+    !!python/unicode model_number: !!python/unicode N/A
+    !!python/unicode monitor_event_types: [!!python/unicode MouseMoveEvent, !!python/unicode MouseDragEvent,
+      !!python/unicode MouseScrollEvent, !!python/unicode MouseButtonPressEvent, !!python/unicode MouseButtonReleaseEvent,
+      !!python/unicode MouseMultiClickEvent]
+    !!python/unicode name: !!python/unicode mouse
+    !!python/unicode save_events: true
+    !!python/unicode serial_number: !!python/unicode N/A
+    !!python/unicode software_version: !!python/unicode N/A
+    !!python/unicode stream_events: true
+!!python/unicode udp_port: 9034

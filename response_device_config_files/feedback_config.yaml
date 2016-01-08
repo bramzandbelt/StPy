@@ -1,0 +1,13 @@
+feedback:
+    trial:
+        rt: False
+        rtDifference: False
+        outcome: False
+        nTrialCompleted: False
+        nTrialLeft: False
+    block:
+        rt: False
+        rtDifference: False
+        outcome: False
+        nBlockCompleted: False
+        nBlockLeft: False
