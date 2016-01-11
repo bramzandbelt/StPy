@@ -65,6 +65,8 @@ class ExperimentRuntime(ioHubExperimentRuntime):
                                             blockId = phaseTag + str(blockIx),
                                             performanceLog=log)
 
+            return performanceLog
+
         # Parse and process configuration
         # ---------------------------------------------------------------------
         modDir = args[0][1]
