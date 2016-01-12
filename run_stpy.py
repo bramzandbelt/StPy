@@ -57,7 +57,7 @@ class ExperimentRuntime(ioHubExperimentRuntime):
                 # set_soa(config=config,
                 #         log=log)
 
-                present_instruction(config,'practice',blockIx)
+                present_instruction(config,phaseName,blockIx)
                 core.wait(1)
 
                 performanceLog  = run_block(config=config,
