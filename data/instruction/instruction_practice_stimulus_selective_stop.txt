@@ -1,0 +1,10 @@
+INSTRUCTION - PRACTICE ROUND %d
+
+
+
+Occasionally, the first signal is followed by a second signal. 
+
+If you see %s you should stop all your planned responses.
+If you see %s you should ignore it and continue your response as quickly as possible.
+
+Do you have any questions?
