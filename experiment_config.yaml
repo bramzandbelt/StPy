@@ -189,6 +189,8 @@ instruction:
             - data/instruction/instruction.007.jpeg
             - data/instruction/instruction.008.jpeg
             - data/instruction/instruction.009.jpeg
+            - data/instruction/instruction.010.jpeg
+            - data/instruction/instruction.011.jpeg
 #            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.004.jpeg
 #            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.005.jpeg
 #            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.006.jpeg
@@ -206,7 +208,9 @@ instruction:
         type: ImageStim
         name: experimentInstruction
         content:
-            - data/instruction/instruction.010.jpeg
+            - data/instruction/instruction.012.jpeg
+            - data/instruction/instruction.013.jpeg
+            - data/instruction/instruction.014.jpeg
         ori: 0
         pos: [0,0]
     #
@@ -217,7 +221,7 @@ instruction:
         type: ImageStim
         name: thankYouMessage
         content:
-            - data/instruction/instruction.011.jpeg
+            - data/instruction/instruction.015.jpeg
         ori: 0
         pos: [0,0]
 
@@ -262,10 +266,10 @@ stimConfig:
     s2:
         type: TextStim
         name: s2
-        content: [L,R,S,N]
+        content: ["\u2666","\u2665","\u2660","\u2663"]
         color: [255,255,0]
         font: Arial
-        height: 2
+        height: 3
         ori: 0
         pos: [0,0]
     feedback:
@@ -337,7 +341,7 @@ practice:
     # trialListFile
     #
     # Path to the .csv-file containing the trial list for the practice blocks
-    trialListFile: data/trial_data/trialListPractice.csv
+    trialListFile: data/trial_data/trialListPractice_test.csv
     randomizeBlocks: False
     randomizeTrials: False
 
@@ -350,7 +354,7 @@ experiment:
     #
     # Path to the .csv-file containing the trial list for the experimental
     # blocks
-    trialListFile: data/trial_data/trialListExperiment_1500.csv
+    trialListFile: data/trial_data/trialListExperiment_1500_test.csv
     randomizeBlocks: False
     randomizeTrials: False
     #
