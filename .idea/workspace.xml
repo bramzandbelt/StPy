@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="014cd07d-5d23-4fc9-92bc-6a69028a4d06" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.iohpid" afterPath="$PROJECT_DIR$/.iohpid" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/experiment_config.yaml" afterPath="$PROJECT_DIR$/experiment_config.yaml" />
-    </list>
+    <list default="true" id="014cd07d-5d23-4fc9-92bc-6a69028a4d06" name="Default" comment="" />
     <ignored path="StPy.iws" />
     <ignored path=".idea/workspace.xml" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -79,7 +75,7 @@
       <file leaf-file-name="experiment_config.yaml" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/experiment_config.yaml">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="4.3451614">
+            <state vertical-scroll-proportion="7.964516">
               <caret line="343" column="52" selection-start-line="343" selection-start-column="52" selection-end-line="343" selection-end-column="52" />
               <folding />
             </state>
@@ -891,7 +887,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/experiment_config.yaml">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="4.3451614">
+        <state vertical-scroll-proportion="7.964516">
           <caret line="343" column="52" selection-start-line="343" selection-start-column="52" selection-end-line="343" selection-end-column="52" />
           <folding />
         </state>
