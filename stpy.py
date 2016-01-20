@@ -445,7 +445,12 @@ def define_stimulus(window,stimInfo):
                     stimulus[i].setPos(stimInfo['pos'])
             if 'color' in stimInfo:
                 if stimInfo['color']:
-                    stimulus[i].setColor(stimInfo['color'], 'rgb255')
+
+                    # Check if color vary or be the same across different stimuli of this type
+                    if all([isinstance(stimInfo['color'],list),len(stimInfo['color']) == 3,isinstance(stimInfo['color'][0],int)]):
+                        stimulus[i].setColor(stimInfo['color'], 'rgb255')
+                    elif all([isinstance(stimInfo['color'],list),len(stimInfo['color']) == len(stimInfo['content']),isinstance(stimInfo['color'][0],list)]):
+                        stimulus[i].setColor(stimInfo['color'][i], 'rgb255')
 
         # Image stimuli
         # ---------------------------------------------------------------------
