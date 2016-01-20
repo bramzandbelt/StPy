@@ -166,12 +166,12 @@ instruction:
         type: ImageStim
         name: generalInstruction
         content:
-           - data/instruction/instruction.001.jpeg
-           - data/instruction/instruction.002.jpeg
-           - data/instruction/instruction.003.jpeg
-#            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.001.jpeg
-#            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.002.jpeg
-#            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.003.jpeg
+#            - /Users/bramzandbelt/Dropbox/ScienceProjects/stpy/v0.1/data/instruction/instruction.001.jpeg
+#            - /Users/bramzandbelt/Dropbox/ScienceProjects/stpy/v0.1/data/instruction/instruction.002.jpeg
+#            - /Users/bramzandbelt/Dropbox/ScienceProjects/stpy/v0.1/data/instruction/instruction.003.jpeg
+            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.001.jpeg
+            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.002.jpeg
+            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.003.jpeg
         ori: 0
         pos: [0,0]
     #
@@ -179,24 +179,14 @@ instruction:
     # Screens to show at beginning of the practice block(s)
     #
     practice:
-        instructionListFile: data/instruction/instruction_list_practice.csv
+        instructionListFile: D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction_list_practice.csv
         type: ImageStim
         name: practiceInstruction
         content:
-            - data/instruction/instruction.004.jpeg
-            - data/instruction/instruction.005.jpeg
-            - data/instruction/instruction.006.jpeg
-            - data/instruction/instruction.007.jpeg
-            - data/instruction/instruction.008.jpeg
-            - data/instruction/instruction.009.jpeg
-            - data/instruction/instruction.010.jpeg
-            - data/instruction/instruction.011.jpeg
-#            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.004.jpeg
-#            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.005.jpeg
-#            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.006.jpeg
-#            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.007.jpeg
-#            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.008.jpeg
-#            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.009.jpeg
+            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.004.jpeg
+            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.005.jpeg
+            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.006.jpeg
+            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.007.jpeg
         ori: 0
         pos: [0,0]
     #
@@ -204,13 +194,11 @@ instruction:
     # Screens to show at beginning of the experimental block(s)
     #
     experiment:
-        instructionListFile: data/instruction/instruction_list_experiment.csv
+        instructionListFile: D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction_list_experiment.csv
         type: ImageStim
         name: experimentInstruction
         content:
-            - data/instruction/instruction.012.jpeg
-            - data/instruction/instruction.013.jpeg
-            - data/instruction/instruction.014.jpeg
+            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.008.jpeg
         ori: 0
         pos: [0,0]
     #
@@ -221,7 +209,7 @@ instruction:
         type: ImageStim
         name: thankYouMessage
         content:
-            - data/instruction/instruction.015.jpeg
+            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.009.jpeg
         ori: 0
         pos: [0,0]
 
@@ -257,17 +245,17 @@ stimConfig:
         #
         #
         content: [a,b,d,f,g,h,i,j,k,l,m,n,q,r,u,w,x,z]
+        color: [0,0,0]
         font: PJ Hiragana
-        color: [255,255,255]
-        fontFile: ['data/trial_data/pj-hiragana.ttf']
+        fontFile: ['D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\trial_data\pj-hiragana.ttf']
         height: 4
         ori: 0
         pos: [0,0]
     s2:
         type: TextStim
         name: s2
-        content: ["\u2665","\u2666","\u2663","\u2660"]
-        color: [[0,0,255],[0,0,255],[0,255,255],[0,255,255]]
+        content: [L,R,S,N]
+        color: [255,255,0]
         font: Arial
         height: 2
         ori: 0
@@ -341,7 +329,7 @@ practice:
     # trialListFile
     #
     # Path to the .csv-file containing the trial list for the practice blocks
-    trialListFile: data/trial_data/trialListPractice.csv
+    trialListFile: D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\trial_data\trialListPractice_test.csv
     randomizeBlocks: False
     randomizeTrials: False
 
@@ -354,7 +342,7 @@ experiment:
     #
     # Path to the .csv-file containing the trial list for the experimental
     # blocks
-    trialListFile: data/trial_data/trialListExperiment_1500.csv
+    trialListFile: D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\trial_data\trialListExperiment_test.csv
     randomizeBlocks: False
     randomizeTrials: False
     #
@@ -519,8 +507,8 @@ statistics:
 evaluation:
     trial:
         evalDataFile:
-            Keyboard: data/trial_data/trialEvalData_Keyboard.csv
-            Serial: data/trial_data/trialEvalData_Serial.csv
+            Keyboard: D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\trial_data\trialEvalData_Keyboard.csv 
+            Serial: D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\trial_data\trialEvalData_Serial.csv
             fORP:
     block:
 
@@ -551,7 +539,7 @@ feedback:
 log:
     # runtime:
     # Whether or not runtime info should be written to disk (boolean)
-    runtime: True
+    runtime: False
     performance:
         # trial:      Whether trial performance should be written to disk
         #             (boolean)
