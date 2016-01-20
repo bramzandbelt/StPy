@@ -253,8 +253,8 @@ stimConfig:
         #
         #
         content: [a,b,d,f,g,h,i,j,k,l,m,n,q,r,u,w,x,z]
-        color: [0,0,0]
         font: PJ Hiragana
+        color: [255,255,255]
         fontFile: ['data/trial_data/pj-hiragana.ttf']
         height: 4
         ori: 0
@@ -262,8 +262,8 @@ stimConfig:
     s2:
         type: TextStim
         name: s2
-        content: [L,R,S,N]
-        color: [255,255,0]
+        content: ["\u2665","\u2666","\u2663","\u2660"]
+        color: [[255,0,0],[255,0,0],[0,0,0],[0,0,0]]
         font: Arial
         height: 2
         ori: 0
