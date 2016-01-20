@@ -267,7 +267,7 @@ stimConfig:
         type: TextStim
         name: s2
         content: ["\u2666","\u2665","\u2660","\u2663"]
-        color: [[0,0,255],[0,0,255],[0,255,255],[0,255,255]]
+        color: [[0,0,255],[0,0,255],[255,255,0],[255,255,0]]
         font: Arial
         height: 3
         ori: 0
@@ -341,7 +341,7 @@ practice:
     # trialListFile
     #
     # Path to the .csv-file containing the trial list for the practice blocks
-    trialListFile: data/trial_data/trialListPractice.csv
+    trialListFile: data/trial_data/trialListPractice_short_100SSD.csv
     randomizeBlocks: False
     randomizeTrials: False
 
@@ -354,7 +354,7 @@ experiment:
     #
     # Path to the .csv-file containing the trial list for the experimental
     # blocks
-    trialListFile: data/trial_data/trialListExperiment_1500.csv
+    trialListFile: data/trial_data/trialListExperiment_1500_short_100SSD.csv
     randomizeBlocks: False
     randomizeTrials: False
     #
