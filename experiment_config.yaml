@@ -263,7 +263,7 @@ stimConfig:
         type: TextStim
         name: s2
         content: ["\u2665","\u2666","\u2663","\u2660"]
-        color: [[255,0,0],[255,0,0],[0,0,0],[0,0,0]]
+        color: [[0,0,255],[0,0,255],[0,255,255],[0,255,255]]
         font: Arial
         height: 2
         ori: 0
