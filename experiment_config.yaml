@@ -245,7 +245,7 @@ stimConfig:
         content: [+]
         color: [255,255,255]
         font: Arial
-        height: 2
+        height: 3
         ori: 0
         pos: [0,0]
     s1:
@@ -260,7 +260,7 @@ stimConfig:
         font: PJ Hiragana
         color: [255,255,255]
         fontFile: ['data/trial_data/pj-hiragana.ttf']
-        height: 4
+        height: 6
         ori: 0
         pos: [0,0]
     s2:
@@ -284,7 +284,7 @@ stimConfig:
     iti:
         type: TextStim
         name: iti
-        content: '+'
+        content: ' '
         color: [255,255,255]
         font: Arial
         height: 2
