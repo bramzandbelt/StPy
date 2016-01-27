@@ -203,6 +203,10 @@ def compute_trial_statistics(trialStats,rd,log):
 
     # Response time
     # -------------------------------------------------------------------------
+    # Compute response times relative to primary (go) signal for first (rt1)
+    # and  second (rt2) key strokes plus their min (fastest), max (slowest),
+    # and mean across keys
+
     rt1 = {key: np.nan for key in rspKeys}
     rt2 = rt1.copy()
 
@@ -214,6 +218,15 @@ def compute_trial_statistics(trialStats,rd,log):
             log.iloc[0]['rt1_'+key] = rt1[key]
             log.iloc[0]['rt2_'+key] = rt2[key]
 
+    if trialStats['rt']:
+
+        log.iloc[0]['rt1_mean'] = np.nanmean(rt1.values())
+        log.iloc[0]['rt2_mean'] = np.nanmean(rt2.values())
+        log.iloc[0]['rt1_min'] = np.nanmin(rt1.values())
+        log.iloc[0]['rt2_min'] = np.nanmin(rt2.values())
+        log.iloc[0]['rt1_max'] = np.nanmax(rt1.values())
+        log.iloc[0]['rt2_max'] = np.nanmax(rt2.values())
+
     # Response time difference
     # -------------------------------------------------------------------------
     if trialStats['rtDiff']:
@@ -222,12 +235,32 @@ def compute_trial_statistics(trialStats,rd,log):
             log.iloc[0]['rtDiff1_' + pairStr] = rt1[pair[0]] - rt1[pair[1]]
             log.iloc[0]['rtDiff2_' + pairStr] = rt2[pair[0]] - rt2[pair[1]]
 
+        rtDiff1Cols = [col for col in log.columns if col.startswith('rtDiff1_')]
+        rtDiff2Cols = [col for col in log.columns if col.startswith('rtDiff2_')]
+
+        log.iloc[0]['rtDiff1_mean'] = log.iloc[0][rtDiff1Cols].mean()
+        log.iloc[0]['rtDiff2_mean'] = log.iloc[0][rtDiff2Cols].mean()
+
     # Raw processing time
     # -------------------------------------------------------------------------
+    # Compute response times relative to secondary signal for first (rt1) and
+    # second (rt2) key strokes plus their min (fastest), max (slowest), and
+    # mean across keys
+
     if trialStats['rpt']:
         for key in rspKeys:
             log.iloc[0]['rpt1_' + key] = rt1[key] - s2Ons
             log.iloc[0]['rpt2_' + key] = rt2[key] - s2Ons
+
+        rpt1Cols = [col for col in log.columns if col.startswith('rpt1_')]
+        rpt2Cols = [col for col in log.columns if col.startswith('rpt2_')]
+
+        log.iloc[0]['rpt1_mean'] = log.iloc[0][rpt1Cols].mean()
+        log.iloc[0]['rpt2_mean'] = log.iloc[0][rpt2Cols].mean()
+        log.iloc[0]['rpt1_min'] = log.iloc[0][rpt1Cols].min()
+        log.iloc[0]['rpt2_min'] = log.iloc[0][rpt2Cols].min()
+        log.iloc[0]['rpt1_max'] = log.iloc[0][rpt1Cols].max()
+        log.iloc[0]['rpt2_max'] = log.iloc[0][rpt2Cols].max()
 
     return log
 
@@ -688,15 +721,30 @@ def init_log(config):
         statsColumns += list(chain.from_iterable(('rt1_'+key,
                                                   'rt2_'+key)
                                                  for key in rspKeys))
+        statsColumns.append('rt1_mean')
+        statsColumns.append('rt2_mean')
+        statsColumns.append('rt1_min')
+        statsColumns.append('rt2_min')
+        statsColumns.append('rt1_max')
+        statsColumns.append('rt2_max')
+
     if config['statistics']['trial']['rtDiff']:
         statsColumns += ['rtDiff1_'+pair[0]+'-'+pair[1] for pair in rspKeyPairs]
         statsColumns += ['rtDiff2_'+pair[0]+'-'+pair[1] for pair in rspKeyPairs]
+
+        statsColumns.append('rtDiff1_mean')
+        statsColumns.append('rtDiff2_mean')
 
     if config['statistics']['trial']['rpt']:
         statsColumns += list(chain.from_iterable(('rpt1_'+key,
                                                   'rpt2_'+key)
                                                  for key in rspKeys))
-
+        statsColumns.append('rpt1_mean')
+        statsColumns.append('rpt2_mean')
+        statsColumns.append('rpt1_min')
+        statsColumns.append('rpt2_min')
+        statsColumns.append('rpt1_max')
+        statsColumns.append('rpt2_max')
 
 
     columns += idColumnsSess
@@ -1401,11 +1449,24 @@ def run_block(config,trialList,blockId,performanceLog):
     # Compute block stats
     # =========================================================================
 
+    # Identify no-signal trial
+
+
+
+
     # If this is the right practice block, then compute SOAs and set them in
     # trialList of expt
 
     # Present block feedback and write data if necessary
     # -------------------------------------------------------------------------
+    # 'Mean response time: %d milliseconds'
+    # 'Response time synchrony: %d milliseconds'
+    # 'Mean no-signal choice accuracy: %d percent'
+    # 'Stop trial performance'
+    # 'Ignore trial performance'
+
+
+
 
     return performanceLog
 
