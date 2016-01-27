@@ -297,6 +297,7 @@ def evaluate_trial(evalData,window,stimuli,log):
 
     # Define dynamic variables
     # -------------------------------------------------------------------------
+    trialCorrect    = []
     trialLabel      = []
     trialFeedback   = []
 
@@ -312,6 +313,7 @@ def evaluate_trial(evalData,window,stimuli,log):
     labelValue = evalData['label'].loc[iRow].as_matrix().tolist()
 
     if sum(iRow) == 0:
+        trialCorrect = False
         trialLabel = 'no match'
         trialFeedback = 'incorrect response (no match)'
 
@@ -319,14 +321,18 @@ def evaluate_trial(evalData,window,stimuli,log):
         pprint(patternDict)
 
     if sum(iRow) == 1:
+
+        trialCorrect = evalData['correct'].loc[iRow].as_matrix().tolist()[0]
         trialLabel = ", ".join(labelValue)
         trialFeedback = evalData['feedback'].loc[iRow].as_matrix().tolist()[0]
 
     if sum(iRow) > 1:
+        trialCorrect = False
         trialLabel = 'multi match: ' + ", ".join(labelValue)
         trialFeedback = 'incorrect response (multi match)'
         print 'WARNING: Non-unique trial label'
 
+    log.iloc[0]['trialCorrect'] = trialCorrect
     log.iloc[0]['trialType'] = trialLabel
     log.iloc[0]['trialFeedback'] = trialFeedback
 
@@ -679,8 +685,9 @@ def init_log(config):
                                'tBlock',
                                'trialOns',
                                'trialDur']
-    feedbackColumns         = ['trialType',
-                               'feedback']
+    feedbackColumns         = ['trialCorrect',
+                               'trialType',
+                               'trialFeedback']
 
     if config['stimConfig']['fix']['content'] is not None:
         ixColumns += ['fixIx']
@@ -926,6 +933,7 @@ def init_config(runtime,configDir):
                    if not col.startswith('trial')]
 
     config['evaluation']['trial']['evalData'] = trialEvalData[evalColumns].copy()
+    config['evaluation']['trial']['correct'] = trialEvalData['trialCorrect'].copy()
     config['evaluation']['trial']['label'] = trialEvalData['trialLabelAbbrev'].copy()
     config['evaluation']['trial']['feedback'] = trialEvalData['trialFeedback'].copy()
 
