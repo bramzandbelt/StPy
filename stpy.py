@@ -5,6 +5,7 @@ from psychopy import visual, monitors, core, event, iohub, info
 print 'psychopy version: %s' % info.psychopyVersion
 import os
 import time
+import random # for setting random number generator seed
 import calendar
 from itertools import chain
 
@@ -40,6 +41,36 @@ import re
 
 # Do not monitor for key presses during wait periods
 core.checkPygletDuringWait = False
+
+def check_df_from_csv_file(df):
+
+    # Index (*Ix) and keycount (keycount*) columns should be of type object
+    # This is to guarantee that NA and integers can be represented. Floats would
+    # cause problems.
+
+    # cols = [col for col in df.select_dtypes(exclude = ['int'])
+    #           if col.endswith('Ix') or col.startswith('keyCount')]
+    # for col in cols:
+    #     df[col] = df[col].astype('object')
+
+
+    # if os.path.isfile(trialListFile):
+    #     trialList = pd.read_csv(trialListFile)
+    #     ixCols = [col for col in trialList if re.search('Ix$',col)]
+    #
+    #
+    #     # Assertions
+    #     # ---------------------------------------------------------------------
+    #     for col in ixCols:
+    #         assert trialList[col].dtype == np.int or \
+    #                all(trialList['cueIx'].isnull()), \
+    #             'column {} in file {} contains data other than integers'.format(col,trialListFile)
+    #
+    #
+    #
+    #     config['practice']['trialList'] = trialList
+
+    return df
 
 def collect_response(rd,kb, *args, **kwargs):
     """
@@ -238,8 +269,8 @@ def compute_trial_statistics(trialStats,rd,log):
         rtDiff1Cols = [col for col in log.columns if col.startswith('rtDiff1_')]
         rtDiff2Cols = [col for col in log.columns if col.startswith('rtDiff2_')]
 
-        log.iloc[0]['rtDiff1_mean'] = log.iloc[0][rtDiff1Cols].mean()
-        log.iloc[0]['rtDiff2_mean'] = log.iloc[0][rtDiff2Cols].mean()
+        log.iloc[0]['rtDiff1_mean'] = log.iloc[0][rtDiff1Cols].abs().mean()
+        log.iloc[0]['rtDiff2_mean'] = log.iloc[0][rtDiff2Cols].abs().mean()
 
     # Raw processing time
     # -------------------------------------------------------------------------
@@ -263,6 +294,296 @@ def compute_trial_statistics(trialStats,rd,log):
         log.iloc[0]['rpt2_max'] = log.iloc[0][rpt2Cols].max()
 
     return log
+
+def evaluate_block(config,df,blockId,blockLog):
+
+    # Subfunctions
+    def assess_performance(stat,lo,hi):
+
+        if lo <= stat <= hi:
+            critMet = True
+        else:
+            critMet = False
+
+        return critMet
+    def get_bounds(config,stat,ix):
+        crit = config['feedback']['block'][stat]['criterion']
+
+        if isinstance(crit[0],list):
+            return min(crit[ix]), max(crit[ix])
+        else:
+            return min(crit), max(crit)
+
+    def get_data(df,statType,trialType,stimType,stimIx):
+
+        bla = {'s1Accuracy':    df.trialCorrect[trialType & (stimType == stimIx)].value_counts(),
+               's2Accuracy':    df.trialCorrect[trialType & (stimType == stimIx)].value_counts(),
+               's1MeanRt':      df.rt1_mean[trialType & (stimType == ix)],
+               's1MeanRtDiff':  df.rtDiff1_mean[trialType & (stimType == ix)]}
+
+        data = bla[statType]
+
+        return data
+    def get_desc_stat(data,statType):
+
+        # Assertions
+        knownStatTypes = ['s1Accuracy','s2Accuracy','s1MeanRt','s1MeanRtDiff']
+        assert statType in knownStatTypes, 'unknown statType %s' % statType
+
+        if statType == 's1Accuracy' or statType == 's2Accuracy':
+
+            if True in data.index:
+                nTrue       = data[True].astype(float)
+                nTrial      = data.sum().astype(float)
+                pCorrect    = nTrue / nTrial
+                descStat    = (pCorrect * 100).round()
+            else:
+                descStat    = 0
+
+        elif statType == 's1MeanRt':
+            descStat = (data.mean() * 1000).round()
+        elif statType == 's1MeanRtDiff':
+            descStat = (data.abs().mean() * 1000).round()
+        else:
+            descStat = np.nan
+
+        return descStat
+    def get_feedback_message(config,stat,ix):
+        posMes = config['feedback']['block'][stat]['feedbackPos']
+        negMes = config['feedback']['block'][stat]['feedbackNeg']
+
+        if isinstance(posMes,list):
+            if len(posMes) == 1:
+                pos = posMes[0]
+            elif len(posMes) > 1:
+                pos = posMes[ix]
+        else:
+            pos = posMes
+
+        if isinstance(negMes,list):
+            if len(negMes) == 1:
+                neg = negMes[0]
+            elif len(negMes) > 1:
+                neg = negMes[ix]
+        else:
+            neg = negMes
+
+        return str(pos), str(neg)
+    def update_feedback_log(log,stimIx,stat,statType,critMet):
+
+        # Dict of formatted strings, referring to columns in log
+        strStatCol      = {'s1Accuracy':    's1Acc_%.2d',
+                           's2Accuracy':    's2Acc_%.2d',
+                           's1MeanRt':      's1MeanRt_%.2d',
+                           's1MeanRtDiff':  's1MeanRtDiff_%.2d'}
+        strCritCol      = {'s1Accuracy':    's1AccCritMet_%.2d',
+                           's2Accuracy':    's2AccCritMet_%.2d',
+                           's1MeanRt':      's1MeanRtCritMet_%.2d',
+                           's1MeanRtDiff':  's1MeanRtDiffCritMet_%.2d'}
+
+        # Column names for statistic and criterion
+        colStat         = strStatCol[statType] % stimIx
+        colCrit         = strCritCol[statType] % stimIx
+
+        # Update the log
+        log[colStat]    = stat
+        log[colCrit]    = critMet
+
+        return log
+    def update_feedback_screen(win,feedbackStim,stim,stat,statType,critMet,posMes,negMes):
+        #
+        #
+        #
+        #
+        #
+
+        # Define some variables
+        # -----------------------------------------------------------------
+        stimName        = stim.name[stim.name.find('_')+1:]
+
+        stimNameText    = get_empty_text_stim(win)
+        performText     = get_empty_text_stim(win)
+        feedbackText    = get_empty_text_stim(win)
+
+        posFeedbackColor = (255, 255, 255)
+        negFeedbackColor = (255, 128, 0)
+
+        # Stimulus
+        # -----------------------------------------------------------------
+        stimNameText.setText(stimName)
+        feedbackStim['stim'].append(stimNameText)
+
+        # Performance
+        # -----------------------------------------------------------------
+
+        statStr = {'s1Accuracy':    '%d%% correct',
+                   's2Accuracy':    '%d%% correct',
+                   's1MeanRt':      '%d ms needed to respond',
+                   's1MeanRtDiff':  '%d ms difference between left & right'}
+
+        performText.setText(statStr[statType] % stat)
+
+        if critMet:
+            performText.setColor(posFeedbackColor,'rgb255')
+        else:
+            performText.setColor(negFeedbackColor, 'rgb255')
+
+        feedbackStim['performance'].append(performText)
+
+        # Feedback
+        # -----------------------------------------------------------------
+        if critMet:
+            feedbackText.setText(posMes)
+            feedbackText.setColor(posFeedbackColor,'rgb255')
+        else:
+            feedbackText.setText(negMes)
+            feedbackText.setColor(negFeedbackColor, 'rgb255')
+
+        feedbackStim['feedback'].append(feedbackText)
+
+        return feedbackStim
+
+    window          = config['window']['window']
+    trialStats      = config['statistics']['trial']
+
+    s1              = df.s1Ix
+    s2              = df.s2Ix
+    s1Trial         = (s1.notnull()) & (s2.isnull())
+    s2Trial         = s2.notnull()
+
+    anyS1Trial      = any(s1Trial)
+    anyS2Trial      = any(s2Trial)
+
+    trialTypeExist  = {'s1Accuracy':     anyS1Trial,
+                       's2Accuracy':     anyS2Trial,
+                       's1MeanRt':       anyS1Trial,
+                       's1MeanRtDiff':   anyS1Trial}
+
+    trialType       = {'s1Accuracy':     s1Trial,
+                       's2Accuracy':     s2Trial,
+                       's1MeanRt':       s1Trial,
+                       's1MeanRtDiff':   s1Trial}
+
+    # Unique indices of relevant stimulus present in data frame
+    uniqueStimIxs   =  {'s1Accuracy':     sorted(s1[s1.notnull()].unique().tolist()),
+                        's2Accuracy':     sorted(s2[s2.notnull()].unique().tolist()),
+                        's1MeanRt':       sorted(s1[s1.notnull()].unique().tolist()),
+                        's1MeanRtDiff':   sorted(s1[s1.notnull()].unique().tolist())}
+
+    # Relevent stimulus type to select on
+    stimType        = {'s1Accuracy':    s1,
+                       's2Accuracy':     s2,
+                       's1MeanRt':       s1,
+                       's1MeanRtDiff':   s1}
+
+    # Stimulus
+    stimulus        =  {'s1Accuracy':     config['stimuli']['s1'],
+                        's2Accuracy':     config['stimuli']['s2'],
+                        's1MeanRt':       config['stimuli']['s1'],
+                        's1MeanRtDiff':   config['stimuli']['s1']}
+
+
+    # Task performance features to provide feedback on
+    features        = config['feedback']['block']
+    feedbackFeat    = [key for key in features.keys() if features[key]['enable'] and trialTypeExist[key]]
+
+    blockFeedback   = config['feedback']['block']
+    blockFeedbackStim = {'stim': [],
+                         'performance': [],
+                         'feedback': []}
+
+    criteriaMet     = []
+
+    for feat in sorted(feedbackFeat):
+
+        for ix in uniqueStimIxs[feat]:
+
+            lowerBound, upperBound  = get_bounds(config=config,
+                                                 stat=feat,
+                                                 ix=ix)
+
+            posMessage, negMessage  = get_feedback_message(config=config,
+                                                           stat=feat,
+                                                           ix=ix)
+
+            data = get_data(df=df,
+                            statType=feat,
+                            trialType=trialType[feat],
+                            stimType=stimType[feat],
+                            stimIx=ix)
+
+            if not data.empty:
+
+                descStat = get_desc_stat(statType=feat,
+                                         data=data)
+                thisCritMet = assess_performance(stat=descStat,
+                                                 lo=lowerBound,
+                                                 hi=upperBound)
+
+                criteriaMet.append(thisCritMet)
+
+                # Update feedback screen
+                blockFeedbackStim = update_feedback_screen(win=window,
+                                                           feedbackStim=blockFeedbackStim,
+                                                           stim=stimulus[feat][ix],
+                                                           stat=descStat,
+                                                           statType=feat,
+                                                           critMet=thisCritMet,
+                                                           posMes=posMessage,
+                                                           negMes=negMessage)
+
+                # Update feedback log
+                blockLog     = update_feedback_log(log=blockLog,
+                                                   stimIx=ix,
+                                                   stat=descStat,
+                                                   statType=feat,
+                                                   critMet=thisCritMet)
+
+    allCritMet = all(criteriaMet)
+
+    # Display feedback
+    # -------------------------------------------------------------------------
+
+    # Count how lines feedback
+    nLines = len(blockFeedbackStim['stim'])
+
+    # Loop over feedback lines
+    for iStim in range(nLines):
+
+        # Set position of the s1 or s2 stimulus
+        yPos = (float(nLines) - 1)/2 - iStim
+        xPos = -15
+        blockFeedbackStim['stim'][iStim].setPos((xPos,yPos))
+        blockFeedbackStim['stim'][iStim].setHeight(0.75)
+        blockFeedbackStim['stim'][iStim].alignHoriz = 'left'
+        blockFeedbackStim['stim'][iStim].setAutoDraw(True)
+
+        # Set position of performance stimulus
+        xPos = -10
+        blockFeedbackStim['performance'][iStim].setPos((xPos,yPos))
+        blockFeedbackStim['performance'][iStim].setHeight(0.75)
+        blockFeedbackStim['performance'][iStim].alignHoriz = 'left'
+
+        blockFeedbackStim['performance'][iStim].setAutoDraw(True)
+
+        # Set position of feedback stimulus
+        xPos = 5
+        blockFeedbackStim['feedback'][iStim].setPos((xPos,yPos))
+        blockFeedbackStim['feedback'][iStim].setHeight(0.75)
+        blockFeedbackStim['feedback'][iStim].alignHoriz = 'left'
+
+        blockFeedbackStim['feedback'][iStim].setAutoDraw(True)
+
+    window.flip()
+    core.wait(15)
+    for iStim in range(nLines):
+        blockFeedbackStim['stim'][iStim].setAutoDraw(False)
+        blockFeedbackStim['performance'][iStim].setAutoDraw(False)
+        blockFeedbackStim['feedback'][iStim].setAutoDraw(False)
+    window.flip()
+
+    return allCritMet
+    
 
 def evaluate_trial(evalData,window,stimuli,log):
     """
@@ -404,7 +725,7 @@ def get_empty_text_stim(window):
 
     return textStim
 
-def define_stimulus(window,stimInfo):
+def define_stimulus(window,stimInfo,*args):
     """
     Make PsychoPy stimuli
 
@@ -438,6 +759,11 @@ def define_stimulus(window,stimInfo):
         assert stimInfo.has_key(key), \
             'stimInfo does not contain key {0:s}'.format(key)
 
+    if len(args) == 1:
+        stimType = args[0]
+    else:
+        stimType = ''
+
     nStimulus = len(stimInfo['content'])
 
     # Initialize list of stimuli
@@ -453,7 +779,10 @@ def define_stimulus(window,stimInfo):
                 "stimulus is neither a TextStim nor an ImageStim"
 
         # Set stimulus name
-        stimulus[i].name = stimInfo['name']
+        if isinstance(stimInfo['name'],list):
+            stimulus[i].name = ''.join([stimType,'_',stimInfo['name'][i]])
+        else:
+            stimulus[i].name = ''.join([stimType,'_',stimInfo['name']])
 
         # Text stimuli
         # ---------------------------------------------------------------------
@@ -652,130 +981,241 @@ def init_log(config):
 
     # Assertions
 
+    # TODO: Add the following columns
+    # time since trigger event (for fMRI)
+    #
 
+    ###########################################################################
+    # SESSION-SPECIFIC COLUMNS AND DATA
+    ###########################################################################
 
-    index   = []
-    columns = []
-
-    # Define session columns and data
-    # =========================================================================
     idColumnsSess   = ['studyId',
-                       'experimenterId',
-                       'responseDevice']
+                       'sesionId',
+                       'experimenterId']
+
     idDataSess      = [config['study']['studyId'],
-                       config['session']['experimenterId'],
-                       config['apparatus']['rd']['settings']['class']]
+                       config['session']['sessionId'],
+                       config['session']['experimenterId']]
+
+    techColumnsSess = ['responseDevice',
+                       'refreshRate',
+                       'rngSeed']
+
+    techDataSess    = [config['apparatus']['rd']['settings']['class'],
+                       config['window']['frameRate'],
+                       config['session']['rngSeed']]
 
     ixColumnsSess   = ['subjectIx',
                        'groupIx',
                        'sessionIx']
+
     ixDataSess      = [config['subject']['subjectIx'],
                        config['subject']['groupIx'],
                        config['session']['sessionIx']]
+
     timeColumnsSess = ['sessDate',
                        'sessTime']
     timeDataSess    = [config['session']['date'],
                        config['session']['time']]
-    # Define columns with data that does vary across trials
-    # =========================================================================
-    idColumns               = ['blockId']
-    ixColumns               = ['blockIx',
-                               'trialIx']
-    timeColumns             = ['tSession',
-                               'tBlock',
-                               'trialOns',
-                               'trialDur']
-    feedbackColumns         = ['trialCorrect',
-                               'trialType',
-                               'trialFeedback']
 
-    if config['stimConfig']['fix']['content'] is not None:
-        ixColumns += ['fixIx']
-        timeColumns+= ['fixOns','fixOnsDt','fixDur','fixDurDt']
-    if config['stimConfig']['cue']['content'] is not None:
-        ixColumns += ['cueIx']
-        timeColumns += ['cueOns','cueOnsDt','cueDur','cueDurDt']
-    if config['stimConfig']['s1']['content'] is not None:
-        ixColumns += ['s1Ix']
-        timeColumns += ['s1Ons','s1OnsDt','s1Dur','s1DurDt']
-    if config['stimConfig']['s2']['content'] is not None:
-        ixColumns += ['s2Ix','soaIx']
-        timeColumns += ['s2Ons','s2OnsDt','s2Dur','s2DurDt']
-
-    # Response event times
-    # -------------------------------------------------------------------------
-    # e.g. 'keyCount_f'
-    # e.g. 'keyTime1_f', 'keyTime2_f'
-
-    rspKeys = [item
-               for sublist
-               in config['apparatus']['rd']['settings']['rspKeys']
-               for item in sublist]
-
-    respEvColumns = list(chain.from_iterable(('keyCount_'+key,
-                                              'keyTime1_'+key,
-                                              'keyTime2_'+key)
-                                             for key in rspKeys))
-
-
-    # Descriptive stats
-    # -------------------------------------------------------------------------
-    trialStats      = config['statistics']['trial']
-    rspKeyPairs    = config['apparatus']['rd']['settings']['rspKeys']
-    statsColumns    = []
-
-    if config['statistics']['trial']['rt']:
-        statsColumns += list(chain.from_iterable(('rt1_'+key,
-                                                  'rt2_'+key)
-                                                 for key in rspKeys))
-        statsColumns.append('rt1_mean')
-        statsColumns.append('rt2_mean')
-        statsColumns.append('rt1_min')
-        statsColumns.append('rt2_min')
-        statsColumns.append('rt1_max')
-        statsColumns.append('rt2_max')
-
-    if config['statistics']['trial']['rtDiff']:
-        statsColumns += ['rtDiff1_'+pair[0]+'-'+pair[1] for pair in rspKeyPairs]
-        statsColumns += ['rtDiff2_'+pair[0]+'-'+pair[1] for pair in rspKeyPairs]
-
-        statsColumns.append('rtDiff1_mean')
-        statsColumns.append('rtDiff2_mean')
-
-    if config['statistics']['trial']['rpt']:
-        statsColumns += list(chain.from_iterable(('rpt1_'+key,
-                                                  'rpt2_'+key)
-                                                 for key in rspKeys))
-        statsColumns.append('rpt1_mean')
-        statsColumns.append('rpt2_mean')
-        statsColumns.append('rpt1_min')
-        statsColumns.append('rpt2_min')
-        statsColumns.append('rpt1_max')
-        statsColumns.append('rpt2_max')
-
-
-    columns += idColumnsSess
-    columns += idColumns
-    columns += ixColumnsSess
-    columns += ixColumns
-    columns += timeColumnsSess
-    columns += timeColumns
-    columns += respEvColumns
-    columns += statsColumns
-    columns += feedbackColumns
-    log = DataFrame(index = index, columns = columns)
-
-    # Add values for columns that remain stationary across the session
     sessColumns     = []
     sessColumns     += idColumnsSess
+    sessColumns     += techColumnsSess
     sessColumns     += ixColumnsSess
     sessColumns     += timeColumnsSess
+
     sessData        = []
     sessData        += idDataSess
+    sessData        += techDataSess
     sessData        += ixDataSess
     sessData        += timeDataSess
 
-    return log, sessColumns, sessData
+    # # Copy columns to prevent that sessColumns is updated
+    # trialColumns    = list(sessColumns)
+    # blockColumns    = list(sessColumns)
+
+    ###########################################################################
+    # TRIAL-SPECIFIC COLUMNS
+    ###########################################################################
+
+    def init_trial_log(config,columns):
+
+        # Identifiers
+        # =====================================================================
+        idColumns               = ['blockId']
+
+        # Indices
+        # =====================================================================
+        ixColumns               = ['blockIx',
+                                   'trialIx']
+
+        if config['stimConfig']['fix']['content'] is not None:
+            ixColumns += ['fixIx']
+        if config['stimConfig']['cue']['content'] is not None:
+            ixColumns += ['cueIx']
+        if config['stimConfig']['s1']['content'] is not None:
+            ixColumns += ['s1Ix']
+        if config['stimConfig']['s2']['content'] is not None:
+            ixColumns += ['s2Ix','soaIx']
+
+
+        # Time
+        # =====================================================================
+        timeColumns             = ['tSession',
+                                   'tBlock',
+                                   'trialOns',
+                                   'trialDur']
+
+        if config['stimConfig']['fix']['content'] is not None:
+            timeColumns+= ['fixOns','fixOnsDt','fixDur','fixDurDt']
+        if config['stimConfig']['cue']['content'] is not None:
+            timeColumns += ['cueOns','cueOnsDt','cueDur','cueDurDt']
+        if config['stimConfig']['s1']['content'] is not None:
+            timeColumns += ['s1Ons','s1OnsDt','s1Dur','s1DurDt']
+        if config['stimConfig']['s2']['content'] is not None:
+            timeColumns += ['s2Ons','s2OnsDt','s2Dur','s2DurDt']
+
+        # Feedback
+        # =====================================================================
+        feedbackColumns         = ['trialCorrect',
+                                   'trialType',
+                                   'trialFeedback']
+
+        # Response event times
+        # =====================================================================
+        rspKeys = [item
+                   for sublist
+                   in config['apparatus']['rd']['settings']['rspKeys']
+                   for item in sublist]
+
+        respEvColumns = list(chain.from_iterable(('keyCount_'+key,
+                                                  'keyTime1_'+key,
+                                                  'keyTime2_'+key)
+                                                 for key in rspKeys))
+
+        # Descriptive statistics
+        # =====================================================================
+        trialStats      = config['statistics']['trial']
+        rspKeyPairs    = config['apparatus']['rd']['settings']['rspKeys']
+        statsColumns    = []
+
+        if config['statistics']['trial']['rt']:
+            statsColumns += list(chain.from_iterable(('rt1_'+key,
+                                                      'rt2_'+key)
+                                                     for key in rspKeys))
+            statsColumns.append('rt1_mean')
+            statsColumns.append('rt2_mean')
+            statsColumns.append('rt1_min')
+            statsColumns.append('rt2_min')
+            statsColumns.append('rt1_max')
+            statsColumns.append('rt2_max')
+
+        if config['statistics']['trial']['rtDiff']:
+            statsColumns += ['rtDiff1_'+pair[0]+'-'+pair[1] for pair in rspKeyPairs]
+            statsColumns += ['rtDiff2_'+pair[0]+'-'+pair[1] for pair in rspKeyPairs]
+
+            statsColumns.append('rtDiff1_mean')
+            statsColumns.append('rtDiff2_mean')
+
+        if config['statistics']['trial']['rpt']:
+            statsColumns += list(chain.from_iterable(('rpt1_'+key,
+                                                      'rpt2_'+key)
+                                                     for key in rspKeys))
+            statsColumns.append('rpt1_mean')
+            statsColumns.append('rpt2_mean')
+            statsColumns.append('rpt1_min')
+            statsColumns.append('rpt2_min')
+            statsColumns.append('rpt1_max')
+            statsColumns.append('rpt2_max')
+
+        # Put it together
+        # =====================================================================
+        columns += idColumns
+        columns += ixColumns
+        columns += timeColumns
+        columns += respEvColumns
+        columns += statsColumns
+        columns += feedbackColumns
+
+        return columns
+
+    trialCols = init_trial_log(config=config,columns=list(sessColumns))
+
+    ###########################################################################
+    # BLOCK-SPECIFIC COLUMNS
+    ###########################################################################
+
+    def init_block_log(config,columns):
+
+        # Identifiers
+        # =====================================================================
+        idColumns               = ['blockId']
+
+        # Indices
+        # =====================================================================
+        ixColumns               = ['blockIx',
+                                   'iterIx']
+
+
+        nS1 = len(config['stimuli']['s1'])
+        nS2 = len(config['stimuli']['s2'])
+
+        # Accuracy - s1
+        # =====================================================================
+        if config['feedback']['block']['s1Accuracy']['enable']:
+
+            s1AccComprehension= [('s1Acc_%.2d' % s1,
+                                  's1AccCritMet_%.2d' % s1) for s1 in range(nS1)]
+            s1AccCols = list(chain(*s1AccComprehension))
+
+        else:
+            s1AccCols = []
+
+        # Accuracy - s2
+        # =====================================================================
+        if config['feedback']['block']['s2Accuracy']['enable']:
+            s2AccComprehension= [('s2Acc_%.2d' % s2,
+                                  's2AccCritMet_%.2d' % s2) for s2 in range(nS2)]
+            s2AccCols = list(chain(*s2AccComprehension))
+        else:
+            s2AccCols = []
+
+        # Mean RT - s1
+        # =====================================================================
+        if config['feedback']['block']['s1MeanRt']['enable']:
+            s1RtComprehension= [('s1MeanRt_%.2d' % s1,
+                                 's1MeanRtCritMet_%.2d' % s1) for s1 in range(nS1)]
+            s1RtCols = list(chain(*s1RtComprehension))
+        else:
+            s1RtCols = []
+
+        # Mean RT diff - s1
+        # =====================================================================
+        if config['feedback']['block']['s1MeanRtDiff']['enable']:
+            s1RtDiffComprehension= [('s1MeanRtDiff_%.2d' % s1,
+                                     's1MeanRtDiffCritMet_%.2d' % s1) for s1 in range(nS1)]
+            s1RtDiffCols = list(chain(*s1RtDiffComprehension))
+        else:
+            s1RtDiffCols = []
+
+        # Put it together
+        # =====================================================================
+        columns += idColumns
+        columns += ixColumns
+        columns += s1AccCols
+        columns += s2AccCols
+        columns += s1RtCols
+        columns += s1RtDiffCols
+
+        return columns
+
+    blockCols = init_block_log(config=config,columns=list(sessColumns))
+
+    ###########################################################################
+    # OUTPUT
+    ###########################################################################
+
+    return trialCols, blockCols, sessColumns, sessData
 
 def init_config(runtime,configDir):
     """
@@ -807,22 +1247,27 @@ def init_config(runtime,configDir):
     # age
 
     config['subject'] = {'subjectIx':   int(userDefParams['subjectIx']),
-                         'groupIx':     int(userDefParams['groupIx']),
-                         'sex':         userDefParams['subject_sex'],
-                         'age':         userDefParams['subject_age']
-                         }
+                         'groupIx':     int(userDefParams['groupIx'])}
 
     ###########################################################################
     # SESSION
     ###########################################################################
 
-    now = time.gmtime(calendar.timegm(time.gmtime()) - core.getTime())
+    tSessStartUNIX  = time.time() - core.getTime() # UNIX time stamp
+    tSessStartGMT   = time.gmtime(tSessStartUNIX) # GMT time stamp
 
-    config['session'] = {'sessionIx': int(userDefParams['sessionIx']),
-                         'experimenterId': config['session_defaults']['experimenterId'],
-                         'date': time.strftime('%Y-%m-%d',now),
-                         'time': time.strftime('%H%M-GMT',now)
-                         }
+    # Seed the random number generator
+    random.seed(tSessStartUNIX)
+
+    session = {'sessionIx': int(userDefParams['sessionIx']),
+               'sessionId': config['session_defaults']['name'],
+               'experimenterId': config['session_defaults']['experimenterId'],
+               'date': time.strftime('%Y-%m-%d',tSessStartGMT),
+               'weekday': time.strftime('%a',tSessStartGMT),
+               'time': time.strftime('%H%M-GMT',tSessStartGMT),
+               'rngSeed': tSessStartUNIX}
+
+    config['session'] = session
 
     ###########################################################################
     # APPARATUS
@@ -831,21 +1276,15 @@ def init_config(runtime,configDir):
     config['apparatus'] = {'hub':       hub,
                            'display':   dict(),
                            'kb':        dict(),
-                           'rd':        dict()
-                           }
+                           'rd':        dict()}
 
     config['apparatus']['display']['client'] = hub.getDevice('display')
-    print 'Display: %s' % config['apparatus']['display']['client']
-
     config['apparatus']['kb']['client'] = hub.getDevice('keyboard')
-    print 'Keyboard: %s' % config['apparatus']['kb']['client']
-
 
     if hub.getDevice('responsedevice') is None:
         config['apparatus']['rd']['client'] = hub.getDevice('keyboard')
     else:
         config['apparatus']['rd']['client'] = hub.getDevice('responsedevice')
-    print 'Response device: %s' % config['apparatus']['rd']['client']
 
     # Keyboard settings
     # -------------------------------------------------------------------------
@@ -855,12 +1294,6 @@ def init_config(runtime,configDir):
                                              'toggleKeys': toggleKeys}
 
     kb = config['apparatus']['kb']['client']
-
-    print 'Keyboard: \n'
-    print '-------------------------------------------------------------------'
-    print 'Reports events: %s' % kb.isReportingEvents()
-    print 'Configuration: \n'
-    pprint(kb.getConfiguration())
 
     # Response device settings
     # -------------------------------------------------------------------------
@@ -880,13 +1313,6 @@ def init_config(runtime,configDir):
     # Enable event reporting and clear all recorded events
     rd.enableEventReporting()
     rd.clearEvents()
-
-    print 'Response device : \n'
-    print '-----'
-    print 'Reports events: %s \n' % rd.isReportingEvents()
-    print 'Configuration: \n'
-    pprint(rd.getConfiguration())
-
 
     ###########################################################################
     # WINDOW
@@ -911,7 +1337,7 @@ def init_config(runtime,configDir):
     ###########################################################################
 
     # Make stimuli
-    config['stimuli'] = {stim: define_stimulus(window,config['stimConfig'][stim])
+    config['stimuli'] = {stim: define_stimulus(window,config['stimConfig'][stim],stim)
                          for stim in config['stimConfig']
                          if config['stimConfig'][stim]['content'] is not None}
 
@@ -924,7 +1350,7 @@ def init_config(runtime,configDir):
     # EVALUATION
     ###########################################################################
     trialEvalData = pd.read_csv(config['evaluation']['trial']['evalDataFile'][rdClass])
-
+    trialEvalData = check_df_from_csv_file(trialEvalData)
 
 
     trialCategories = trialEvalData.fillna(value=np.nan)
@@ -946,162 +1372,127 @@ def init_config(runtime,configDir):
                                         for type in config['instruction']
                                         if config['instruction'][type]['content'] is not None}
 
-    config['instruction']['practice']['list'] = pd.read_csv(config['instruction']['practice']['instructionListFile'])
-    config['instruction']['experiment']['list'] = pd.read_csv(config['instruction']['experiment']['instructionListFile'])
+
+
+    instrListP = pd.read_csv(config['instruction']['practice']['instructionListFile'])
+    instrListP = check_df_from_csv_file(df=instrListP)
+    config['instruction']['practice']['list'] = instrListP
+
+    instrListE = pd.read_csv(config['instruction']['experiment']['instructionListFile'])
+    instrListE = check_df_from_csv_file(df=instrListE)
+    config['instruction']['experiment']['list'] = instrListE
 
     ###########################################################################
     # PRACTICE
     ###########################################################################
 
+    if userDefParams['practice']:
+        config['practice']['enable'] = True
+    else:
+        config['practice']['enable'] = False
+
     # If a trialListFile exists, use this
-    trialListFile = config['practice']['trialListFile']
-
-    if os.path.isfile(trialListFile):
-        trialList = pd.read_csv(trialListFile)
-        ixCols = [col for col in trialList if re.search('Ix$',col)]
-
-
-        # Assertions
-        # ---------------------------------------------------------------------
-        for col in ixCols:
-            assert trialList[col].dtype == np.int or \
-                   all(trialList['cueIx'].isnull()), \
-                'column {} in file {} contains data other than integers'.format(col,trialListFile)
-
-
-
-        config['practice']['trialList'] = trialList
+    trListP = pd.read_csv(config['practice']['trialListFile'])
+    trListP = check_df_from_csv_file(df=trListP)
+    config['practice']['trialList'] = trListP
 
     ###########################################################################
     # EXPERIMENT
     ###########################################################################
 
-    # If a trialListFile exists, use this
-    trialListFile = config['experiment']['trialListFile']
+    if userDefParams['experiment']:
+        config['experiment']['enable'] = True
+    else:
+        config['experiment']['enable'] = False
 
-    if os.path.isfile(trialListFile):
-        config['experiment']['trialList'] = pd.read_csv(trialListFile)
+    trListE = pd.read_csv(config['experiment']['trialListFile'])
+    trListE = check_df_from_csv_file(df=trListE)
+    config['experiment']['trialList'] = trListE
 
     ###########################################################################
-    # PROCEDURE
+    # PERFORMANCE REQUIREMENTS
     ###########################################################################
 
-    # Clocks
-    # -------------------------------------------------------------------------
-    # clock = {'trial': core.Clock(),     # Reset once per trial, at no-signal onset
-    #          'block': core.Clock(),     # Reset once per block, at block onset
-    #          'session': core.Clock()}   # Reset once per session, at start of experiment
-
-    # Stimulus-onset asynchronies
-    # -------------------------------------------------------------------------
-    # soaType = []
-
-    # soa = {'type': soaType}
-
-    # Feedback
-    # -------------------------------------------------------------------------
-
-
-    # Computation
-    # =========================================================================
-
-
-    # Evaluation
-    # =========================================================================
-
-    # Trial categories
-    # -------------------------------------------------------------------------
-    # trialCategories = pd.read_csv(config['evaluation']['trial']['file'])
-    # trialCategories = trialCategories.fillna(value='NULL')
-    # config['evaluation']['trial']['categories'] = trialCategories
-
-    # Log
-    # =========================================================================
+    ###########################################################################
+    # LOG
+    ###########################################################################
 
     # Make a log directory, if it does not exist
+    studyId = config['study']['studyId']
     exptDir = os.path.abspath(os.path.join(configDir, os.pardir))
-    logDir = os.path.normcase(os.path.join(exptDir,'log'))
+    logDir = os.path.normcase(os.path.join(exptDir,'log/',studyId))
 
     if not os.path.isdir(logDir):
         os.mkdir(logDir)
 
+    strFormatRuntime        = '%s_Study_%s_Group_%.2d_Subject_%.3d_Session_%.2d_%s_%s'
+    strFormatPerformance    = '%s_Study_%s_Group_%.2d_Subject_%.3d'
+
     # Run time info
     # -------------------------------------------------------------------------
 
-    if config['log']['runtime']:
+    if config['log']['runtime']['enable']:
 
         runTimeInfo = info.RunTimeInfo(win=window,
                                        refreshTest=True,
                                        verbose=True,
                                        userProcsDetailed=True)
 
-        strFormat = '%s_Study_%s_Group_%.2d_Subject_%.3d_Session_%.2d_%s_%s'
-
-        fileName = strFormat % ('runTimeInfo',
-                                config['study']['studyId'],
-                                config['subject']['groupIx'],
-                                config['subject']['subjectIx'],
-                                config['session']['sessionIx'],
-                                config['session']['date'],
-                                config['session']['time'])
-
+        fileName = strFormatRuntime % ('runTimeInfo',
+                                       config['study']['studyId'],
+                                       config['subject']['groupIx'],
+                                       config['subject']['subjectIx'],
+                                       config['session']['sessionIx'],
+                                       config['session']['date'],
+                                       config['session']['time'])
 
         filePath = os.path.normcase(os.path.join(logDir, fileName + '.csv'))
 
-        with open(filePath,'wt') as fileObj:
+        with open(filePath,'a+') as fileObj:
             fileObj.write(str(runTimeInfo))
 
     # Task performance
     # -------------------------------------------------------------------------
 
     # Init log data frame
-    performanceLog, sessColumns, sessData = init_log(config)
+    trialCols, blockCols, sessCols, sessData = init_log(config)
 
-    config['log']['performance']['dataframe']   = performanceLog
-    config['log']['performance']['sessColumns'] = sessColumns
-    config['log']['performance']['sessData']    = sessData
+    config['log']['performance']['sessColumns'] = sessCols
+    config['log']['performance']['sessData'] = sessData
 
-    if config['log']['performance']['trial']:
+    if config['log']['performance']['trial']['enable']:
 
-        strFormat = '%s_Study_%s_Group_%.2d_Subject_%.3d_Session_%.2d_%s_%s'
+        config['log']['performance']['trial']['columns'] = trialCols
 
-        fileName = strFormat % ('taskPerformance',
-                                config['study']['studyId'],
-                                config['subject']['groupIx'],
-                                config['subject']['subjectIx'],
-                                config['session']['sessionIx'],
-                                config['session']['date'],
-                                config['session']['time'])
+        fileName = strFormatPerformance % ('trialLog',
+                                           config['study']['studyId'],
+                                           config['subject']['groupIx'],
+                                           config['subject']['subjectIx'])
 
         filePath = os.path.normcase(os.path.join(logDir, fileName + '.csv'))
 
-        config['log']['performance']['trialFile'] = filePath
+        config['log']['performance']['trial']['file'] = filePath
 
-        # Init log file on disk
-        with open(filePath,'wt') as fileObj:
-            config['log']['performance']['dataframe'].to_csv(fileObj, index=False, header=True)
+        if not os.path.isfile(filePath):
+            with open(filePath,'a+') as fileObj:
+                DataFrame(index = [], columns = trialCols).to_csv(fileObj, index=False, header=True)
 
-    # Assemble procedure dictionary
-    # -------------------------------------------------------------------------
-    # procedure = {'clock': clock,
-    #              'feedback': feedback,
-    #              'soa': soa,
-    #              'computation': computation,
-    #              'log': log}
+    if config['log']['performance']['block']['enable']:
 
-    # PUT EVERYTHING TOGETHER
-    # =========================================================================
-    # SPY = {'study': study,
-    #        'subject': subject,
-    #        'session': session,
-    #        'files': files,
-    #        'io': io,
-    #        'apparatus': apparatus,
-    #        'stimuli': stimuli,
-    #        'window': window,
-    #        'procedure': procedure}
-    #
-    # return SPY
+        config['log']['performance']['block']['columns'] = blockCols
+
+        fileName = strFormatPerformance % ('blockLog',
+                                           config['study']['studyId'],
+                                           config['subject']['groupIx'],
+                                           config['subject']['subjectIx'])
+
+        filePath = os.path.normcase(os.path.join(logDir, fileName + '.csv'))
+
+        config['log']['performance']['block']['file'] = filePath
+
+        if not os.path.isfile(filePath):
+            with open(filePath,'a+') as fileObj:
+                DataFrame(index = [], columns = blockCols).to_csv(fileObj, index=False, header=True)
 
     return config
 
@@ -1195,8 +1586,10 @@ def present_instruction(config,type,*args):
 
     # Process variable arguments
     if len(args) > 0:
-        blockIx = args[0]
-
+        if type == 'practice' or type == 'experiment':
+            blockIx = args[0]
+        if type == 'blockrepeat':
+            instructionStimIx = args[0]
 
     window          = config['window']['window']
     hub             = config['apparatus']['hub']
@@ -1217,9 +1610,10 @@ def present_instruction(config,type,*args):
         ix              = instructionList.index.tolist()
         iRow            = instructionList[pattern.keys()].isin(pattern).all(1)
         stimList        = instructionList.loc[iRow,'instructionIx'].astype(int).tolist()
+    elif type == 'blockrepeat':
+        stimList        = [instructionStimIx]
     elif type == 'start' or type == 'end':
         stimList        = range(len(instructionStim))
-
 
     # Show instruction screens and monitor keyboard and response device inputs
     # -------------------------------------------------------------------------
@@ -1311,10 +1705,8 @@ def present_stimuli(window,stimList,u,f_on_off,log,timing):
     trialOff = tFlip[-1]
     trialDur = trialOff - trialOns
 
-    # print 'trialOns = %.3f s' % trialOns
-
     # Actual stimulus onset and duration times
-    stimDisplayed = [stim.name for stim in stimList]
+    stimDisplayed = [stim.name[0:stim.name.find('_')] for stim in stimList]
 
     # Log
     log.iloc[0]['trialOns'] = trialOns
@@ -1337,7 +1729,7 @@ def present_stimuli(window,stimList,u,f_on_off,log,timing):
 
     return log
 
-def run_block(config,trialList,blockId,performanceLog):
+def run_block(config,blockId,trialList,blockLog):
     """ Summary line
 
     Extended description
@@ -1367,8 +1759,6 @@ def run_block(config,trialList,blockId,performanceLog):
 
     blockIx         = trialList.iloc[0]['blockIx']
 
-    performanceLogColumns = performanceLog.columns
-
     # Define dynamic variables
     # -------------------------------------------------------------------------
 
@@ -1380,24 +1770,26 @@ def run_block(config,trialList,blockId,performanceLog):
     blockOns = -float('inf')
 
     # =========================================================================
-    trialIxList = trialList.index.tolist()
-
+    trialListIxs    = trialList.index.tolist()
+    trialCols       = config['log']['performance']['trial']['columns']
+    trialLog        = DataFrame(index = trialListIxs,
+                                columns=trialCols)
 
     # Present trials
     # =========================================================================
 
-    for trialIx in trialIxList:
+    for trialListIx in trialListIxs:
 
         # Prepare trial
         # ---------------------------------------------------------------------
-        trialLog = DataFrame(index = [trialIx],
-                             columns = performanceLogColumns)
+        thisTrialLog = DataFrame(index = [trialListIx],
+                                 columns = trialCols)
 
-        # Fill in trial-independent data
+        # Fill in session data
         # ---------------------------------------------------------------------
-        trialLog.loc[trialIx,sessColumns] = sessData
+        thisTrialLog.loc[trialListIx,sessColumns] = sessData
 
-        trialLog, stimList, u, f_on_off, t_max = stim_to_frame_mat(config,trialList.ix[trialIx],trialLog)
+        thisTrialLog, stimList, u, f_on_off, t_max = stim_to_frame_mat(config,trialList.ix[trialListIx],thisTrialLog)
 
         # Clear buffer
         # ---------------------------------------------------------------------
@@ -1407,76 +1799,126 @@ def run_block(config,trialList,blockId,performanceLog):
 
         # Run trial
         # ---------------------------------------------------------------------
-        trialLog    = run_trial(config,
-                                trialLog,
-                                trialTiming,
-                                window,
-                                stimList,
-                                u,
-                                f_on_off,
-                                rd,
-                                kb,
-                                trialStats,
-                                trialEvalData,
-                                stimuli)
-
-        # print 'Time since previous trial: %.3f s' % (trialLog['trialOns'].item() - trialTiming['ons'])
+        thisTrialLog    = run_trial(config,
+                                    thisTrialLog,
+                                    trialTiming,
+                                    window,
+                                    stimList,
+                                    u,
+                                    f_on_off,
+                                    rd,
+                                    kb,
+                                    trialStats,
+                                    trialEvalData,
+                                    stimuli)
 
         # Update timings
-        trialTiming['ons']      = trialLog['trialOns'].item()
+        trialTiming['ons']      = thisTrialLog['trialOns'].item()
         trialTiming['dur']      = t_max
-        trialTiming['ITIDur']   = trialList.ix[trialIx]['ITIDur']
+        trialTiming['ITIDur']   = trialList.ix[trialListIx]['ITIDur']
 
         # Log trial data not logged inside run_trial
         # ---------------------------------------------------------------------
-        trialLog['blockId']     = blockId
+        thisTrialLog.loc[trialListIx,'blockId']     = blockId
 
-        trialLog['blockIx']     = blockIx
-        trialLog['trialIx']     = trialList.ix[trialIx]['trialIx']
+        thisTrialLog.loc[trialListIx,'blockIx']     = blockIx
+        thisTrialLog.loc[trialListIx,'trialIx']     = trialList.ix[trialListIx]['trialIx']
 
         # Session timing
         sm, ss = divmod(trialTiming['ons'], 60)
         sh, sm = divmod(sm, 60)
-        trialLog['tSession']    = '%d:%02d:%02d' % (sh, sm, ss)
+        thisTrialLog.loc[trialListIx,'tSession']    = '%d:%02d:%02d' % (sh, sm, ss)
 
         # Block timing
-        if trialIx == trialIxList[0]:
+        if trialListIx == trialListIxs[0]:
             blockOns = trialTiming['ons']
         bs, bms = divmod(trialTiming['ons'] - blockOns,1)
         bm, bs = divmod(bs, 60)
         bh, bm = divmod(bm, 60)
-        trialLog['tBlock']      = '%d:%02d:%02d.%03d' % (bh, bm, bs,bms*1000)
+        thisTrialLog.loc[trialListIx,'tBlock']      = '%d:%02d:%02d.%03d' % (bh, bm, bs,bms*1000)
 
-        # Append trial data to data frame and file
+        # Put trial data into data frame and file
         # ---------------------------------------------------------------------
-        performanceLog = performanceLog.append(trialLog)
+        trialLog.ix[trialListIx] = thisTrialLog.ix[trialListIx]
 
-        with open(config['log']['performance']['trialFile'],'a') as fileObj:
-            trialLog.to_csv(fileObj, index=False, header=False, na_rep=np.nan)
+        tStart = time.time();
+
+        with open(config['log']['performance']['trial']['file'],'a+') as fileObj:
+            thisTrialLog.to_csv(fileObj, index=False, header=False, na_rep=np.nan)
+
+        print 'Time needed to write trialLog: %.3f ms' % (1000.*(time.time() - tStart))
 
     # Compute block stats
     # =========================================================================
+    df = trialLog[trialLog.blockId == blockId]
+    allCritMet = evaluate_block(config,
+                                df=df,
+                                blockId = blockId,
+                                blockLog = blockLog)
 
-    # Identify no-signal trial
+    return blockLog, allCritMet
+
+def run_phase(config,phaseId,trialList):
+
+    blockIxs        = trialList['blockIx'].unique()
+    blockCols       = config['log']['performance']['block']['columns']
+    blockLog        = DataFrame(index=blockIxs,
+                                columns=blockCols)
+
+    sessColumns     = config['log']['performance']['sessColumns']
+    sessData        = config['log']['performance']['sessData']
+
+    performanceReq  = config['performanceRequirements'][phaseId]
+
+    for blockIx in blockIxs:
+
+        allCritMet  = False
+        nIter       = 0
+        forceRepeat = performanceReq['forceRepeat']
+        maxNIter    = performanceReq['maxNIter']
+
+        blockId     = '%s%.3d' % (phaseId[0], blockIx)
+
+        thisBlockLog = DataFrame(index = [blockIx],columns = blockCols)
+
+        thisBlockLog.loc[blockIx,sessColumns] = sessData
+        thisBlockLog.loc[blockIx,'blockId'] = blockId
+        thisBlockLog.loc[blockIx,'blockIx'] = blockIx
+        thisBlockLog.loc[blockIx,'iterX'] = nIter
+
+        while not allCritMet:
+
+            print 'Run %s block %d' % (phaseId,blockIx)
+
+            trialListBlock = trialList[trialList['blockIx'] == blockIx]
+
+            present_instruction(config,phaseId,blockIx)
+
+            thisBlockLog,allCritMet = run_block(config=config,
+                                                blockId = blockId,
+                                                trialList = trialListBlock,
+                                                blockLog=thisBlockLog)
+
+            # Write block log
+            # ---------------------------------------------------------
+            with open(config['log']['performance']['block']['file'],'a+') as fileObj:
+                thisBlockLog.to_csv(fileObj, index=False, header=False, na_rep=np.nan)
 
 
+            if forceRepeat:
+                if not allCritMet:
+                    if nIter == (maxNIter - 1):
+                        present_instruction(config,'blockrepeat',1)
+                        present_instruction(config,'end')
+                        core.wait(5)
+                        core.quit()
+                    else:
+                        nIter = nIter + 1
 
-
-    # If this is the right practice block, then compute SOAs and set them in
-    # trialList of expt
-
-    # Present block feedback and write data if necessary
-    # -------------------------------------------------------------------------
-    # 'Mean response time: %d milliseconds'
-    # 'Response time synchrony: %d milliseconds'
-    # 'Mean no-signal choice accuracy: %d percent'
-    # 'Stop trial performance'
-    # 'Ignore trial performance'
-
-
-
-
-    return performanceLog
+                        # Warn subject that block will be repeated
+                        present_instruction(config,'blockrepeat',0)
+            else:
+                break
 
 def run_trial(config,trialLog,trialTiming,window,stimList,u,f_on_off,rd,kb,trialStats,trialEvalData,stimuli):
 
