@@ -20,7 +20,6 @@ pd.set_option('display.max_columns', None)
 from pprint import pprint
 import re
 
-
 # To Do:
 #
 # ADD PAUSE KEY FUNCTIONALITY
@@ -71,7 +70,6 @@ def check_df_from_csv_file(df):
     #     config['practice']['trialList'] = trialList
 
     return df
-
 def collect_response(rd,kb, *args, **kwargs):
     """
     Collect responses from response device and keyboard
@@ -206,7 +204,6 @@ def collect_response(rd,kb, *args, **kwargs):
     else:
 
         return keyCount, toggleKeyPressed
-
 def compute_trial_statistics(trialStats,rd,log):
     """
     Computes descriptive statistics, such as response time, response time
@@ -294,7 +291,6 @@ def compute_trial_statistics(trialStats,rd,log):
         log.iloc[0]['rpt2_max'] = log.iloc[0][rpt2Cols].max()
 
     return log
-
 def evaluate_block(config,df,blockId,blockLog):
 
     # Subfunctions
@@ -583,8 +579,6 @@ def evaluate_block(config,df,blockId,blockLog):
     window.flip()
 
     return allCritMet
-    
-
 def evaluate_trial(evalData,window,stimuli,log):
     """
 
@@ -687,7 +681,6 @@ def evaluate_trial(evalData,window,stimuli,log):
     stimuli['iti'][0].setAutoDraw(False)
 
     return log
-
 def get_empty_text_stim(window):
 
     """
@@ -724,7 +717,6 @@ def get_empty_text_stim(window):
     textStim.setSize(2,units='deg')
 
     return textStim
-
 def define_stimulus(window,stimInfo,*args):
     """
     Make PsychoPy stimuli
@@ -834,7 +826,6 @@ def define_stimulus(window,stimInfo,*args):
                 stimulus[i].setPos(stimInfo['pos'])
 
     return stimulus
-
 def stim_to_frame_mat(config,trial,log):
     """
 
@@ -926,40 +917,6 @@ def stim_to_frame_mat(config,trial,log):
     u, f_on_off, t = time_to_frame(ons=ons, dur=dur, dt=dt, t_max=t_max)
 
     return log, stimList, u, f_on_off, t_max
-
-
-def get_rt_diff(keyRt,pair):
-    """
-
-    :param keyRt: dictionary with response times per key
-    :param pair: list of response key pairs
-    :return rtDiff: difference between first response times
-    """
-
-    rt = [keyRt[key][0] for key in pair]
-
-    if all(rt):
-        rtDiff = rt[0] - rt[1]
-    else:
-        rtDiff = np.nan
-
-    return rtDiff
-
-def get_trial_list(argument):
-    """
-
-    :return:
-    """
-
-    switcher = {'load': load_trial_list(), 'make': make_trial_list()}
-
-    # Get the function from switcher dictionary
-    func = switcher.get(argument)
-    # TODO: enter exception, when argument is not found in dictionary
-
-    # Execute the function
-    return func()
-
 def init_log(config):
     """
     Initializes a pandas DataFrame for logging stop task data
@@ -1216,7 +1173,6 @@ def init_log(config):
     ###########################################################################
 
     return trialCols, blockCols, sessColumns, sessData
-
 def init_config(runtime,configDir):
     """
     Parse and process experiment configuration
@@ -1495,7 +1451,6 @@ def init_config(runtime,configDir):
                 DataFrame(index = [], columns = blockCols).to_csv(fileObj, index=False, header=True)
 
     return config
-
 def init_stimulus(window,stimType):
     """
 
@@ -1508,69 +1463,6 @@ def init_stimulus(window,stimType):
     stimObject = stimDict[stimType.lower()]
 
     return stimObject
-
-def load_trial_list(file):
-    """
-    Read .csv file as pandas data frame
-
-    :param file: path to trial list .csv file
-    :return trialList: trial list as pandas data frame
-    """
-
-    trialList = pd.read_csv(file)
-
-    return trialList
-
-def log_trial():
-    trialLog = []
-
-    return trialLog
-
-def make_log_file():
-    """
-
-    :return:
-    """
-
-    # Identify headers in trial list
-
-    # Identify headers in log list
-
-    # Fill values in log list with values in trial list
-
-    # Return log file?
-
-def make_trial_list():
-    """ Summary line
-
-    Extended description
-
-    Arguments:
-        arg1 (int): Description of arg1
-
-    Returns:
-        bool: Description of return value
-    """
-
-    trialList = [
-        {'onsCue':      [],
-         'onsS1':       [],
-         'onsS2':       [],
-
-         'durCue':      [],
-         'durS1':       [],
-         'durS2':       [],
-
-         'respID':      [],
-         'respTime':    []
-         }
-    ]
-
-    return trialList
-
-def get_flip_time():
-    pass
-
 def present_instruction(config,type,*args):
     """
 
@@ -1650,7 +1542,6 @@ def present_instruction(config,type,*args):
                 elif toggleKeyPressed == toggleKeys[1]:
                     stimIx += 1
                     break
-
 def present_stimuli(window,stimList,u,f_on_off,log,timing):
     """
 
@@ -1728,7 +1619,6 @@ def present_stimuli(window,stimList,u,f_on_off,log,timing):
         log.iloc[0][stimDisplayed[ix]+'DurDt'] = durDt
 
     return log
-
 def run_block(config,blockId,trialList,blockLog):
     """ Summary line
 
@@ -1857,7 +1747,6 @@ def run_block(config,blockId,trialList,blockLog):
                                 blockLog = blockLog)
 
     return blockLog, allCritMet
-
 def run_phase(config,phaseId,trialList):
 
     blockIxs        = trialList['blockIx'].unique()
@@ -1919,7 +1808,6 @@ def run_phase(config,phaseId,trialList):
                         present_instruction(config,'blockrepeat',0)
             else:
                 break
-
 def run_trial(config,trialLog,trialTiming,window,stimList,u,f_on_off,rd,kb,trialStats,trialEvalData,stimuli):
 
 
@@ -1954,8 +1842,6 @@ def run_trial(config,trialLog,trialTiming,window,stimList,u,f_on_off,rd,kb,trial
     # Wrap up
     # -------------------------------------------------------------------------
     return trialLog
-
-
 def set_soa(config,log):
 
     # Process inputs, define variables
@@ -1988,11 +1874,6 @@ def set_soa(config,log):
     # Update soa experiment trial list
     for ix in range(nSoa):
         pass
-
-
-
-
-
 def time_to_frame(ons, dur, dt, t_max):
     """ Summary line
 
