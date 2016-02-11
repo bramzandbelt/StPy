@@ -17,9 +17,10 @@ __vcs_id__      = ''
 ###############################################################################
 from psychopy import core
 from psychopy.iohub import ioHubExperimentRuntime
-from stpy import init_config, present_instruction, run_block, set_soa
+from stpy import init_config, present_instruction, run_phase
 import sys
-import os
+import pandas as pd
+import glob
 
 # Assure that text files are read in as Unicode (utf8) instead of ASCII
 reload(sys)
@@ -41,61 +42,74 @@ class ExperimentRuntime(ioHubExperimentRuntime):
         :param args:
 
         """
-
-        def run_phase(phaseName,config,log):
-
-            phaseTag        = phaseName[0].capitalize()
-            trialList       = config[phaseName]['trialList']
-            blockList       = trialList['blockIx'].unique()
-
-            for blockIx in blockList:
-
-                print 'Run %s block %d' % (phaseName,blockIx)
-
-                trialListBlock = trialList[trialList['blockIx'] == blockIx]
-
-                # set_soa(config=config,
-                #         log=log)
-
-                present_instruction(config,phaseName,blockIx)
-                core.wait(1)
-
-                performanceLog  = run_block(config=config,
-                                            trialList = trialListBlock,
-                                            blockId = phaseTag + str(blockIx),
-                                            performanceLog=log)
-
-            return performanceLog
+        # from psychopy import gui
 
         # Parse and process configuration
         # ---------------------------------------------------------------------
         modDir = args[0][1]
         config  = init_config(self,modDir)
 
+        sessionIx   = config['session']['sessionIx']
+
+        # Determine if data will be overwritten
+        trialLogFile = config['log']['performance']['trial']['file']
+
+        if os.path.isfile(trialLogFile):
+            groupIx     = config['subject']['groupIx']
+            subjectIx   = config['subject']['subjectIx']
+
+
+            trialLog = pd.read_csv(trialLogFile)
+
+            if sessionIx in trialLog.sessionIx:
+                warnDlg = gui.Dlg(title="WARNING",
+                                  labelButtonOK=u' Continue ',
+                                  labelButtonCancel=u' Cancel ')
+                warnDlg.addText('You specified the following settings:')
+                warnDlg.addFixedField('Group index:',groupIx)
+                warnDlg.addFixedField('Subject index:', subjectIx)
+                warnDlg.addFixedField('Session index:',sessionIx)
+                warnDlg.addText('')
+                warnDlg.addText('You might have entered the wrong data. A log file with these data already exists:')
+                warnDlg.addText(trialLogFile)
+                warnDlg.addText('')
+                warnDlg.addText('Press Continue if you want to use the above settings and overwrite/append this file.')
+                warnDlg.addText('Press Cancel if you want to change settings.')
+
+                warnDlg.show()
+
+                if not warnDlg.OK:
+                    return -1
+
         # Present welcome screen and general instruction
         # ---------------------------------------------------------------------
         present_instruction(config,'start')
 
-        # Get performance log data frame
-        # ---------------------------------------------------------------------
-        performanceLog  = config['log']['performance']['dataframe']
-
         # Run practice blocks
         # ---------------------------------------------------------------------
-        performanceLog = run_phase('practice',
-                                   config=config,
-                                   log=performanceLog)
+        if config['practice']['enable']:
+
+            pTrialList      = config['practice']['trialList']
+            pTrialList      = pTrialList[pTrialList.sessionIx == sessionIx]
+
+            run_phase(config=config,
+                      phaseId='practice',
+                      trialList=pTrialList)
 
         # Run experimental blocks
         # ---------------------------------------------------------------------
-        performanceLog = run_phase('experiment',
-                                   config=config,
-                                   log=performanceLog)
+        if config['experiment']['enable']:
+
+            eTrialList      = config['experiment']['trialList']
+            eTrialList      = eTrialList[eTrialList.sessionIx == sessionIx]
+
+            run_phase(config=config,
+                      phaseId='experiment',
+                      trialList=eTrialList)
 
         # Terminate experiment
         # ---------------------------------------------------------------------
         present_instruction(config,'end')
-        core.wait(5)
         core.quit()
 
 ####### Main Script Launching Code Below #######
@@ -108,18 +122,20 @@ if __name__ == "__main__":
     def main(modDir):
         """
 
-        :param modDir: Directory where experiment configuration file resides
+        :param modDir: Directory where module files reside
 
         """
+
+        configDir = os.path.normcase(os.path.join(modDir,'config/'))
 
         # Let user select response device
         # ---------------------------------------------------------------------
         rdConfigFiles = {'Keyboard':
-                            'response_device_config_files/keyboard_config.yaml',
+                            'iohub_keyboard.yaml',
                          'Serial':
-                             'response_device_config_files/serial_config.yaml',
+                             'iohub_serial.yaml',
                          'fORP':
-                             'response_device_config_files/forp_config.yaml'}
+                             'iohub_forp.yaml'}
 
         info = {'Response Device = ': ['Select',
                                        'Keyboard',
@@ -142,22 +158,45 @@ if __name__ == "__main__":
 
         # Merge iohub configuration files
         # ---------------------------------------------------------------------
-        baseConfigFile = os.path.normcase(os.path.join(modDir,
-                                                       'iohub_config_part.yaml'))
+        baseConfigFile = os.path.normcase(os.path.join(configDir,
+                                                       'iohub_base.yaml'))
 
-        respDevConfigFile = os.path.normcase(os.path.join(modDir,
+        respDevConfigFile = os.path.normcase(os.path.join(configDir,
                                 rdConfigFiles[dlg_info.values()[0]]))
 
-        combinedConfigFile = os.path.normcase(os.path.join(modDir,
+        combinedConfigFile = os.path.normcase(os.path.join(configDir,
                                                            'iohub_config.yaml'))
 
         ExperimentRuntime.mergeConfigurationFiles(baseConfigFile,
                                                   respDevConfigFile,
                                                   combinedConfigFile)
 
+        # Determine which experiment configuration file to use
+        # ---------------------------------------------------------------------
+        os.chdir(configDir)
+        exptFiles = ['Select']
+        exptFiles.extend(glob.glob('./expt_*.yaml'))
+        os.chdir(modDir)
+
+        exptConfigInfo = {'Experiment config file = ': exptFiles}
+        exptConfigInfo = dict(exptConfigInfo)
+
+        exptConfigDlg = gui.DlgFromDict(dictionary = exptConfigInfo,
+                                        title = 'Select experiment config file')
+        if not exptConfigDlg.OK:
+            return -1
+
+        while exptConfigInfo.values()[0] == u'Select' and exptConfigDlg.OK:
+            exptConfigInfo = dict(exptConfigInfo)
+            exptConfigDlg = gui.DlgFromDict(dictionary=exptConfigInfo,
+                                          title='SELECT experiment config file to continue...')
+
+        if not exptConfigDlg.OK:
+            return -1
+
         # Start the experiment
         # ---------------------------------------------------------------------
-        runtime=ExperimentRuntime(modDir, "experiment_config.yaml")
+        runtime=ExperimentRuntime(configDir, exptConfigInfo.values()[0])
         runtime.start((dlg_info.values()[0],modDir))
 
     # Get the current directory, using a method that does not rely on __FILE__
