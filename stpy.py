@@ -42,6 +42,33 @@ import re
 core.checkPygletDuringWait = False
 
 def check_df_from_csv_file(df):
+    """
+    <SUMMARY LINE>
+
+    <EXTENDED DESCRIPTION>
+
+    Parameters
+    ----------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
+
+    Returns
+    -------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
+
+    Raises
+    ------
+    <EXCEPTIONS>
+
+    Usage
+    -----
+    <USAGE>
+
+    Example
+    -------
+    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
+    """
 
     # Index (*Ix) and keycount (keycount*) columns should be of type object
     # This is to guarantee that NA and integers can be represented. Floats would
@@ -72,6 +99,32 @@ def check_df_from_csv_file(df):
     return df
 def collect_response(rd,kb, *args, **kwargs):
     """
+    <SUMMARY LINE>
+
+    <EXTENDED DESCRIPTION>
+
+    Parameters
+    ----------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
+
+    Returns
+    -------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
+
+    Raises
+    ------
+    <EXCEPTIONS>
+
+    Usage
+    -----
+    <USAGE>
+
+    Example
+    -------
+    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
+
     Collect responses from response device and keyboard
 
     This function is called at two stages in the experiment:
@@ -209,18 +262,31 @@ def compute_trial_statistics(trialStats,rd,log):
     Computes descriptive statistics, such as response time, response time
     difference, and raw processing time
 
+    <SUMMARY LINE>
+
+    <EXTENDED DESCRIPTION>
+
     Parameters
     ----------
-
+    <NAME> : <TYPE>
+        <DESCRIPTION>
 
     Returns
     -------
-
+    <NAME> : <TYPE>
+        <DESCRIPTION>
 
     Raises
     ------
+    <EXCEPTIONS>
 
+    Usage
+    -----
+    <USAGE>
 
+    Example
+    -------
+    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
     """
 
     rspKeys = [item for sublist in rd['settings']['rspKeys'] for item in sublist]
@@ -292,6 +358,34 @@ def compute_trial_statistics(trialStats,rd,log):
 
     return log
 def evaluate_block(config,df,blockId,blockLog):
+
+    """
+    <SUMMARY LINE>
+
+    <EXTENDED DESCRIPTION>
+
+    Parameters
+    ----------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
+
+    Returns
+    -------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
+
+    Raises
+    ------
+    <EXCEPTIONS>
+
+    Usage
+    -----
+    <USAGE>
+
+    Example
+    -------
+    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
+    """
 
     # Subfunctions
     def assess_performance(stat,lo,hi):
@@ -581,24 +675,31 @@ def evaluate_block(config,df,blockId,blockLog):
     return allCritMet
 def evaluate_trial(evalData,window,stimuli,log):
     """
+    <SUMMARY LINE>
+
+    <EXTENDED DESCRIPTION>
 
     Parameters
     ----------
-    evalData : type
-        blablabla
-    window : type
-        blablabla
-    stimuli : type
-        blablabla
-    log : type
-        blablabla
+    <NAME> : <TYPE>
+        <DESCRIPTION>
 
     Returns
     -------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
 
     Raises
     ------
+    <EXCEPTIONS>
 
+    Usage
+    -----
+    <USAGE>
+
+    Example
+    -------
+    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
     """
 
     # Process inputs
@@ -682,24 +783,33 @@ def evaluate_trial(evalData,window,stimuli,log):
 
     return log
 def get_empty_text_stim(window):
-
     """
+    <SUMMARY LINE>
+
+    <EXTENDED DESCRIPTION>
 
     Parameters
     ----------
-    window
+    <NAME> : <TYPE>
+        <DESCRIPTION>
 
-    INPUTS
-    - window
-    - text
-    - font
+    Returns
+    -------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
 
-    THOUGHTS:
-    - use key-value pairs?
+    Raises
+    ------
+    <EXCEPTIONS>
 
-    :return:
+    Usage
+    -----
+    <USAGE>
+
+    Example
+    -------
+    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
     """
-
     textStim = visual.TextStim(window,
                         text='',
                         font='Arial',
@@ -737,6 +847,32 @@ def define_stimulus(window,stimInfo,*args):
     Raises
     ------
 
+
+    <SUMMARY LINE>
+
+    <EXTENDED DESCRIPTION>
+
+    Parameters
+    ----------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
+
+    Returns
+    -------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
+
+    Raises
+    ------
+    <EXCEPTIONS>
+
+    Usage
+    -----
+    <USAGE>
+
+    Example
+    -------
+    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
     """
 
     # Process inputs
@@ -828,13 +964,31 @@ def define_stimulus(window,stimInfo,*args):
     return stimulus
 def stim_to_frame_mat(config,trial,log):
     """
+    <SUMMARY LINE>
 
-    :param config:
-    :param trial:
-    :param log:
-    :return t:
-    :return u:
+    <EXTENDED DESCRIPTION>
 
+    Parameters
+    ----------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
+
+    Returns
+    -------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
+
+    Raises
+    ------
+    <EXCEPTIONS>
+
+    Usage
+    -----
+    <USAGE>
+
+    Example
+    -------
+    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
     """
 
     trialLogIx = log.index.tolist()[0]
@@ -930,7 +1084,34 @@ def init_log(config):
     -------
     log : pandas.core.frame.DataFrame
 
+
+    <SUMMARY LINE>
+
+    <EXTENDED DESCRIPTION>
+
+    Parameters
+    ----------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
+
+    Returns
+    -------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
+
+    Raises
+    ------
+    <EXCEPTIONS>
+
+    Usage
+    -----
+    <USAGE>
+
+    Example
+    -------
+    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
     """
+
 
     # Process inputs
     # -------------------------------------------------------------------------
@@ -1177,7 +1358,30 @@ def init_config(runtime,configDir):
     """
     Parse and process experiment configuration
 
-    :return config:
+
+    <EXTENDED DESCRIPTION>
+
+    Parameters
+    ----------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
+
+    Returns
+    -------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
+
+    Raises
+    ------
+    <EXCEPTIONS>
+
+    Usage
+    -----
+    <USAGE>
+
+    Example
+    -------
+    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
     """
 
     config = runtime.getConfiguration()
@@ -1453,8 +1657,31 @@ def init_config(runtime,configDir):
     return config
 def init_stimulus(window,stimType):
     """
+    <SUMMARY LINE>
 
-    :return stimObject:
+    <EXTENDED DESCRIPTION>
+
+    Parameters
+    ----------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
+
+    Returns
+    -------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
+
+    Raises
+    ------
+    <EXCEPTIONS>
+
+    Usage
+    -----
+    <USAGE>
+
+    Example
+    -------
+    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
     """
 
     stimDict = {'textstim': visual.TextStim(window),
@@ -1465,12 +1692,31 @@ def init_stimulus(window,stimType):
     return stimObject
 def present_instruction(config,type,*args):
     """
+    <SUMMARY LINE>
 
-    :param config:
-    :param type:
-    :param kwargs:
-    :return:
+    <EXTENDED DESCRIPTION>
 
+    Parameters
+    ----------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
+
+    Returns
+    -------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
+
+    Raises
+    ------
+    <EXCEPTIONS>
+
+    Usage
+    -----
+    <USAGE>
+
+    Example
+    -------
+    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
     """
 
     # Process inputs
@@ -1544,20 +1790,33 @@ def present_instruction(config,type,*args):
                     break
 def present_stimuli(window,stimList,u,f_on_off,log,timing):
     """
+    <SUMMARY LINE>
 
+    <EXTENDED DESCRIPTION>
 
-    What is logged?
-    - onset and duration of trial (trialOns, trialDur), relative to core.getTime()
-    - onset and duration of all stimuli (e.g. fixOns, fixDur), relative to trial onset, in seconds
+    Parameters
+    ----------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
 
+    Returns
+    -------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
 
-    :param window:
-    :param stimList:
-    :param u:
-    :param f_on_off:
-    :param log:
-    :return: trial
+    Raises
+    ------
+    <EXCEPTIONS>
+
+    Usage
+    -----
+    <USAGE>
+
+    Example
+    -------
+    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
     """
+
 
     # Define dynamic variables
     # -------------------------------------------------------------------------
@@ -1620,15 +1879,32 @@ def present_stimuli(window,stimList,u,f_on_off,log,timing):
 
     return log
 def run_block(config,blockId,trialList,blockLog):
-    """ Summary line
+    """
+    <SUMMARY LINE>
 
-    Extended description
+    <EXTENDED DESCRIPTION>
 
-    :var window:
-    :var stimuli:
-    :param iBlock: block index
+    Parameters
+    ----------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
 
+    Returns
+    -------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
 
+    Raises
+    ------
+    <EXCEPTIONS>
+
+    Usage
+    -----
+    <USAGE>
+
+    Example
+    -------
+    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
     """
 
     # 1. Process inputs
@@ -1748,6 +2024,33 @@ def run_block(config,blockId,trialList,blockLog):
 
     return blockLog, allCritMet
 def run_phase(config,phaseId,trialList):
+    """
+    <SUMMARY LINE>
+
+    <EXTENDED DESCRIPTION>
+
+    Parameters
+    ----------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
+
+    Returns
+    -------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
+
+    Raises
+    ------
+    <EXCEPTIONS>
+
+    Usage
+    -----
+    <USAGE>
+
+    Example
+    -------
+    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
+    """
 
     blockIxs        = trialList['blockIx'].unique()
     blockCols       = config['log']['performance']['block']['columns']
@@ -1809,7 +2112,33 @@ def run_phase(config,phaseId,trialList):
             else:
                 break
 def run_trial(config,trialLog,trialTiming,window,stimList,u,f_on_off,rd,kb,trialStats,trialEvalData,stimuli):
+    """
+    <SUMMARY LINE>
 
+    <EXTENDED DESCRIPTION>
+
+    Parameters
+    ----------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
+
+    Returns
+    -------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
+
+    Raises
+    ------
+    <EXCEPTIONS>
+
+    Usage
+    -----
+    <USAGE>
+
+    Example
+    -------
+    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
+    """
 
     # Present stimuli
     # -------------------------------------------------------------------------
@@ -1843,6 +2172,33 @@ def run_trial(config,trialLog,trialTiming,window,stimList,u,f_on_off,rd,kb,trial
     # -------------------------------------------------------------------------
     return trialLog
 def set_soa(config,log):
+    """
+    <SUMMARY LINE>
+
+    <EXTENDED DESCRIPTION>
+
+    Parameters
+    ----------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
+
+    Returns
+    -------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
+
+    Raises
+    ------
+    <EXCEPTIONS>
+
+    Usage
+    -----
+    <USAGE>
+
+    Example
+    -------
+    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
+    """
 
     # Process inputs, define variables
     # -------------------------------------------------------------------------
@@ -1875,16 +2231,34 @@ def set_soa(config,log):
     for ix in range(nSoa):
         pass
 def time_to_frame(ons, dur, dt, t_max):
-    """ Summary line
-
-    Extended description
-
-    Arguments:
-        arg1 (int): Description of arg1
-
-    Returns:
-        bool: Description of return value
     """
+    <SUMMARY LINE>
+
+    <EXTENDED DESCRIPTION>
+
+    Parameters
+    ----------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
+
+    Returns
+    -------
+    <NAME> : <TYPE>
+        <DESCRIPTION>
+
+    Raises
+    ------
+    <EXCEPTIONS>
+
+    Usage
+    -----
+    <USAGE>
+
+    Example
+    -------
+    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
+    """
+
 
     ###########################################################################
     # 1. PROCESS INPUTS & SPECIFY VARIABLES
