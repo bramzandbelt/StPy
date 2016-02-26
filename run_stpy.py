@@ -156,10 +156,30 @@ if __name__ == "__main__":
         if not infoDlg.OK:
             return -1
 
+        # Determine which iohub base configuration file to use
+        # ---------------------------------------------------------------------
+        os.chdir(configDir)
+        iohubBaseFiles = ['Select']
+        iohubBaseFiles.extend(glob.glob('./iohub_base*.yaml'))
+        os.chdir(modDir)
+
+        iohubBaseConfigInfo = {'IOHub base config file = ': iohubBaseFiles}
+        iohubBaseConfigInfo = dict(iohubBaseConfigInfo)
+
+        iohubBaseConfigDlg = gui.DlgFromDict(dictionary = iohubBaseConfigInfo,
+                                        title = 'Select IOHub base config file')
+        if not iohubBaseConfigDlg.OK:
+            return -1
+
+        while iohubBaseConfigInfo.values()[0] == u'Select' and iohubBaseConfigDlg.OK:
+            iohubBaseConfigInfo = dict(iohubBaseConfigInfo)
+            iohubBaseConfigDlg = gui.DlgFromDict(dictionary=iohubBaseConfigInfo,
+                                                 title='SELECT IOHub base config file to continue...')
+
         # Merge iohub configuration files
         # ---------------------------------------------------------------------
         baseConfigFile = os.path.normcase(os.path.join(configDir,
-                                                       'iohub_base.yaml'))
+                                                       iohubBaseConfigInfo.values()[0].replace('./','')))
 
         respDevConfigFile = os.path.normcase(os.path.join(configDir,
                                 rdConfigFiles[dlg_info.values()[0]]))
