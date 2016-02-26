@@ -1161,10 +1161,12 @@ def init_log(config):
     ###########################################################################
 
     idColumnsSess   = ['studyId',
-                       'sesionId',
+                       'taskVersionId',
+                       'sessionId',
                        'experimenterId']
 
     idDataSess      = [config['study']['studyId'],
+
                        config['session']['sessionId'],
                        config['session']['experimenterId']]
 
@@ -1432,6 +1434,7 @@ def init_config(runtime,configDir):
     ###########################################################################
 
     config['study'] = {'studyId':           config['code'],
+                       'taskVersionId':     config['version'],
                        'ethicsProtocolId':  config['ethics_protocol_id']
                        }
 
@@ -1622,14 +1625,19 @@ def init_config(runtime,configDir):
 
     # Make a log directory, if it does not exist
     studyId = config['study']['studyId']
+    taskVersionId = config['study']['taskVersionId']
     exptDir = os.path.abspath(os.path.join(configDir, os.pardir))
-    logDir = os.path.normcase(os.path.join(exptDir,'log/',studyId))
+
+    if config['log']['dir']:
+        logDir = os.path.normcase(os.path.join(config['log']['dir'],studyId))
+    else:
+        logDir = os.path.normcase(os.path.join(exptDir,'log/',studyId))
 
     if not os.path.isdir(logDir):
         os.mkdir(logDir)
 
     strFormatRuntime        = '%s_Study_%s_Group_%.2d_Subject_%.3d_Session_%.2d_%s_%s'
-    strFormatPerformance    = '%s_Study_%s_Group_%.2d_Subject_%.3d'
+    strFormatPerformance    = '%s_Study_%s_TaskVersion_%s_Group_%.2d_Subject_%.3d'
 
     # Run time info
     # -------------------------------------------------------------------------
@@ -1669,6 +1677,7 @@ def init_config(runtime,configDir):
 
         fileName = strFormatPerformance % ('trialLog',
                                            config['study']['studyId'],
+                                           config['study']['taskVersionId'],
                                            config['subject']['groupIx'],
                                            config['subject']['subjectIx'])
 
@@ -1686,6 +1695,7 @@ def init_config(runtime,configDir):
 
         fileName = strFormatPerformance % ('blockLog',
                                            config['study']['studyId'],
+                                           config['study']['taskVersionId'],
                                            config['subject']['groupIx'],
                                            config['subject']['subjectIx'])
 
