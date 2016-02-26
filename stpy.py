@@ -2,12 +2,13 @@ __author__ = 'bramzandbelt'
 
 # Import packages
 from psychopy import visual, monitors, core, event, iohub, info
+from psychopy.hardware.emulator import launchScan
 print 'psychopy version: %s' % info.psychopyVersion
 import os
 import time
 import random # for setting random number generator seed
 import calendar
-from itertools import chain
+from itertools import chain, compress
 
 import numpy as np
 print 'numpy version: %s' % np.__version__
@@ -103,6 +104,10 @@ def collect_response(rd,kb, *args, **kwargs):
 
     <EXTENDED DESCRIPTION>
 
+    Explain the somewhat complicated coding scheme: first we check if escape or other keys are pressed (typically keyboard), then we check if response device keys are pressed.
+    This is necessary because serial response box
+
+
     Parameters
     ----------
     <NAME> : <TYPE>
@@ -129,7 +134,7 @@ def collect_response(rd,kb, *args, **kwargs):
 
     This function is called at two stages in the experiment:
     1. Instruction
-        Returns count of response keys, escape keys, and toggle keys
+        Returns count of response keys, escape keys, and other keys to monitor
     2. Experiment
         Updates the log variable with key count and key time information
 
@@ -139,6 +144,8 @@ def collect_response(rd,kb, *args, **kwargs):
         blablabla
     kb : type
         blablabla
+    otherKeys
+    log
 
     Returns
     -------
@@ -163,20 +170,22 @@ def collect_response(rd,kb, *args, **kwargs):
     keyCount = collect_response(rd,kb)
 
     """
-
-    # TODO: Determine why responses from Serial response box result in incorrect response, even though the right buttons were pressed
+    otherKeysPressed = None
+    otherKeys = None
+    log = None
 
     if len(args) == 0:
-        if len(kwargs) == 0:
-            toggleKeyPressed = None
-        elif len(kwargs) == 1:
-            log = kwargs.get('log')
-        elif len(kwargs) > 1:
-            # TODO: Add error message
-            pass
+        if kwargs:
+            if 'log' in kwargs:
+                log = kwargs.get('log')
+            if 'otherKeys' in kwargs:
+                otherKeys = kwargs.get('otherKeys')
     elif len(args) == 1:
-        log = args[0]
-    elif len(args) > 1:
+        otherKeys = args[0]
+    elif len(args) == 2:
+        otherKeys = args[0]
+        log = args[1]
+    elif len(args) > 2:
         # TODO: Add error message
         pass
 
@@ -188,9 +197,7 @@ def collect_response(rd,kb, *args, **kwargs):
     keyKey      = rd['settings']['keyKey']
     timeKey     = rd['settings']['timeKey']
     rdClass     = rd['settings']['class']
-
     escKeys     = kb['settings']['escKeys']
-    toggleKeys  = kb['settings']['toggleKeys']
 
     # Define dynamic variables
     # -------------------------------------------------------------------------
@@ -206,36 +213,55 @@ def collect_response(rd,kb, *args, **kwargs):
         evKeys = ev._asdict()[keyKey]
         evTime = ev._asdict()[timeKey]
 
+        print 'Key pressed: %s at time %f' % (evKeys, evTime)
+
         # If response device is keyboard and escape keys are in event data
         if rdClass == 'Keyboard':
-            if any([len(re.findall(key,ev._asdict()['key'])) for key in escKeys]):
+
+            if any([re.findall(key,ev._asdict()['key']) for key in escKeys]):
                 print('Warning: Escape key pressed - Experiment is terminated')
                 core.quit()
-            if any([len(re.findall(key,ev._asdict()['key'])) for key in toggleKeys]):
-                toggleKeyPressed = ev._asdict()['key']
-                return keyCount, toggleKeyPressed
+            if otherKeys:
+                if any([re.findall(key,ev._asdict()['key']) for key in otherKeys]):
+                    otherKeysPressed = ev._asdict()['key']
+                    print otherKeysPressed
+                    return keyCount, otherKeysPressed
 
         # If any of the event keys are in event data
-        if any([len(re.findall(key,evKeys)) for key in rspKeys]):
+        if any([re.findall(key,evKeys) for key in rspKeys]):
             for key in rspKeys:
                 keyCount[key] += evKeys.count(key)
-                if len(args) == 1 or len(kwargs) == 1:
+                if isinstance(log,pd.DataFrame):
                     keyTime[key].extend([evTime - log.iloc[0]['trialOns']] * evKeys.count(key))
 
-    # Check if any escape or toggle keys have been pressed
+    # Check if any escape or other keys have been pressed
     # -------------------------------------------------------------------------
     if rdClass != 'Keyboard':
 
         for ev in kb['client'].getEvents():
-            if any([len(re.findall(key,ev._asdict()['key'])) for key in escKeys]):
+            if any([re.findall(key,ev._asdict()['key']) for key in escKeys]):
                 print('Warning: Escape key pressed - Experiment is terminated')
                 core.quit()
-            if any([len(re.findall(key,ev._asdict()['key'])) for key in toggleKeys]):
-                toggleKeyPressed = ev._asdict()['key']
-                return keyCount, toggleKeyPressed
+            if otherKeys:
+                if any([re.findall(key,ev._asdict()['key']) for key in otherKeys]):
+                    otherKeysPressed = ev._asdict()['key']
+                    return keyCount, otherKeysPressed
 
     # For each key, only response times of first two events are stored
-    if len(args) == 1 or len(kwargs) == 1:
+    if isinstance(log,pd.DataFrame):
+
+        for key in rspKeys:
+            if keyCount[key] >= 2:
+
+                # In case of multiple keystrokes of the same key, only keep
+                # events that follow a previous keystroke > 50 ms. Smaller
+                # intervals likely reflect contact bounces
+                toKeep = [True]
+                toKeep.extend((np.diff(keyTime[key]) > 0.05).tolist())
+
+                # Adjust keyCount and keyTime
+                keyCount[key] = toKeep.count(True)
+                keyTime[key] = list(compress(keyTime[key],toKeep))
 
         for key in rspKeys:
             if keyCount[key] > 2:
@@ -256,7 +282,7 @@ def collect_response(rd,kb, *args, **kwargs):
 
     else:
 
-        return keyCount, toggleKeyPressed
+        return keyCount, otherKeysPressed
 def compute_trial_statistics(trialStats,rd,log):
     """
     Computes descriptive statistics, such as response time, response time
@@ -357,7 +383,7 @@ def compute_trial_statistics(trialStats,rd,log):
         log.iloc[0]['rpt2_max'] = log.iloc[0][rpt2Cols].max()
 
     return log
-def evaluate_block(config,df,blockId,blockLog):
+def evaluate_block(config,df,blockId,blockLog,trialOnsNextBlock):
 
     """
     <SUMMARY LINE>
@@ -397,13 +423,12 @@ def evaluate_block(config,df,blockId,blockLog):
 
         return critMet
     def get_bounds(config,stat,ix):
-        crit = config['feedback']['block'][stat]['criterion']
+        crit = config['feedback']['block']['features'][stat]['criterion']
 
         if isinstance(crit[0],list):
             return min(crit[ix]), max(crit[ix])
         else:
             return min(crit), max(crit)
-
     def get_data(df,statType,trialType,stimType,stimIx):
 
         bla = {'s1Accuracy':    df.trialCorrect[trialType & (stimType == stimIx)].value_counts(),
@@ -439,8 +464,8 @@ def evaluate_block(config,df,blockId,blockLog):
 
         return descStat
     def get_feedback_message(config,stat,ix):
-        posMes = config['feedback']['block'][stat]['feedbackPos']
-        negMes = config['feedback']['block'][stat]['feedbackNeg']
+        posMes = config['feedback']['block']['features'][stat]['feedbackPos']
+        negMes = config['feedback']['block']['features'][stat]['feedbackNeg']
 
         if isinstance(posMes,list):
             if len(posMes) == 1:
@@ -496,7 +521,7 @@ def evaluate_block(config,df,blockId,blockLog):
         feedbackText    = get_empty_text_stim(win)
 
         posFeedbackColor = (255, 255, 255)
-        negFeedbackColor = (255, 128, 0)
+        negFeedbackColor = (255, 0, 0)
 
         # Stimulus
         # -----------------------------------------------------------------
@@ -506,10 +531,10 @@ def evaluate_block(config,df,blockId,blockLog):
         # Performance
         # -----------------------------------------------------------------
 
-        statStr = {'s1Accuracy':    '%d%% correct',
-                   's2Accuracy':    '%d%% correct',
-                   's1MeanRt':      '%d ms needed to respond',
-                   's1MeanRtDiff':  '%d ms difference between left & right'}
+        statStr = {'s1Accuracy':    'accuracy:  %d%% correct',
+                   's2Accuracy':    'accuracy:  %d%% correct',
+                   's1MeanRt':      'speed:     %d ms',
+                   's1MeanRtDiff':  'synchrony: %d ms difference'}
 
         performText.setText(statStr[statType] % stat)
 
@@ -574,10 +599,10 @@ def evaluate_block(config,df,blockId,blockLog):
 
 
     # Task performance features to provide feedback on
-    features        = config['feedback']['block']
+    features        = config['feedback']['block']['features']
     feedbackFeat    = [key for key in features.keys() if features[key]['enable'] and trialTypeExist[key]]
 
-    blockFeedback   = config['feedback']['block']
+    blockFeedback   = config['feedback']['block']['features']
     blockFeedbackStim = {'stim': [],
                          'performance': [],
                          'feedback': []}
@@ -642,14 +667,14 @@ def evaluate_block(config,df,blockId,blockLog):
 
         # Set position of the s1 or s2 stimulus
         yPos = (float(nLines) - 1)/2 - iStim
-        xPos = -15
+        xPos = -12
         blockFeedbackStim['stim'][iStim].setPos((xPos,yPos))
         blockFeedbackStim['stim'][iStim].setHeight(0.75)
         blockFeedbackStim['stim'][iStim].alignHoriz = 'left'
         blockFeedbackStim['stim'][iStim].setAutoDraw(True)
 
         # Set position of performance stimulus
-        xPos = -10
+        xPos = -5
         blockFeedbackStim['performance'][iStim].setPos((xPos,yPos))
         blockFeedbackStim['performance'][iStim].setHeight(0.75)
         blockFeedbackStim['performance'][iStim].alignHoriz = 'left'
@@ -665,7 +690,19 @@ def evaluate_block(config,df,blockId,blockLog):
         blockFeedbackStim['feedback'][iStim].setAutoDraw(True)
 
     window.flip()
-    core.wait(15)
+
+    tNow                = config['clock'].getTime()
+    feedbackDuration    = config['feedback']['block']['duration']
+
+    if trialOnsNextBlock == 0:
+        core.wait(feedbackDuration)
+    elif tNow + feedbackDuration < trialOnsNextBlock:
+        core.wait(feedbackDuration)
+    elif tNow < trialOnsNextBlock:
+        core.wait(5)
+    else:
+        core.wait(trialOnsNextBlock - tNow - 2)
+
     for iStim in range(nLines):
         blockFeedbackStim['stim'][iStim].setAutoDraw(False)
         blockFeedbackStim['performance'][iStim].setAutoDraw(False)
@@ -673,7 +710,7 @@ def evaluate_block(config,df,blockId,blockLog):
     window.flip()
 
     return allCritMet
-def evaluate_trial(evalData,window,stimuli,log):
+def evaluate_trial(evalData,feedbackDur,window,stimuli,log):
     """
     <SUMMARY LINE>
 
@@ -731,10 +768,7 @@ def evaluate_trial(evalData,window,stimuli,log):
     if sum(iRow) == 0:
         trialCorrect = False
         trialLabel = 'no match'
-        trialFeedback = 'incorrect response (no match)'
-
-        print 'patternDict for incorrect response (no match): \n'
-        pprint(patternDict)
+        trialFeedback = 'incorrect response'
 
     if sum(iRow) == 1:
 
@@ -745,8 +779,7 @@ def evaluate_trial(evalData,window,stimuli,log):
     if sum(iRow) > 1:
         trialCorrect = False
         trialLabel = 'multi match: ' + ", ".join(labelValue)
-        trialFeedback = 'incorrect response (multi match)'
-        print 'WARNING: Non-unique trial label'
+        trialFeedback = 'incorrect response'
 
     log.iloc[0]['trialCorrect'] = trialCorrect
     log.iloc[0]['trialType'] = trialLabel
@@ -775,7 +808,7 @@ def evaluate_trial(evalData,window,stimuli,log):
     stimuli['feedback'][0].setAutoDraw(True)
     stimuli['iti'][0].setAutoDraw(True)
     window.flip()
-    core.wait(0.5)
+    core.wait(feedbackDur)
     stimuli['feedback'][0].setAutoDraw(False)
     stimuli['iti'][0].setAutoDraw(True)
     window.flip()
@@ -948,6 +981,10 @@ def define_stimulus(window,stimInfo,*args):
                     elif all([isinstance(stimInfo['color'],list),len(stimInfo['color']) == len(stimInfo['content']),isinstance(stimInfo['color'][0],list)]):
                         stimulus[i].setColor(stimInfo['color'][i], 'rgb255')
 
+            if 'opacity' in stimInfo:
+                if stimInfo['opacity']:
+                    stimulus[i].setOpacity(stimInfo['opacity'])
+
         # Image stimuli
         # ---------------------------------------------------------------------
         elif type(stimulus[i]) is visual.image.ImageStim:
@@ -1119,10 +1156,6 @@ def init_log(config):
 
     # Assertions
 
-    # TODO: Add the following columns
-    # time since trigger event (for fMRI)
-    #
-
     ###########################################################################
     # SESSION-SPECIFIC COLUMNS AND DATA
     ###########################################################################
@@ -1196,7 +1229,6 @@ def init_log(config):
         if config['stimConfig']['s2']['content'] is not None:
             ixColumns += ['s2Ix','soaIx']
 
-
         # Time
         # =====================================================================
         timeColumns             = ['tSession',
@@ -1212,6 +1244,10 @@ def init_log(config):
             timeColumns += ['s1Ons','s1OnsDt','s1Dur','s1DurDt']
         if config['stimConfig']['s2']['content'] is not None:
             timeColumns += ['s2Ons','s2OnsDt','s2Dur','s2DurDt']
+
+        # MRI Trigger
+        # =====================================================================
+        triggerColumns          = ['waitedForTrigger']
 
         # Feedback
         # =====================================================================
@@ -1271,6 +1307,7 @@ def init_log(config):
         columns += idColumns
         columns += ixColumns
         columns += timeColumns
+        columns += triggerColumns
         columns += respEvColumns
         columns += statsColumns
         columns += feedbackColumns
@@ -1300,7 +1337,7 @@ def init_log(config):
 
         # Accuracy - s1
         # =====================================================================
-        if config['feedback']['block']['s1Accuracy']['enable']:
+        if config['feedback']['block']['features']['s1Accuracy']['enable']:
 
             s1AccComprehension= [('s1Acc_%.2d' % s1,
                                   's1AccCritMet_%.2d' % s1) for s1 in range(nS1)]
@@ -1311,7 +1348,7 @@ def init_log(config):
 
         # Accuracy - s2
         # =====================================================================
-        if config['feedback']['block']['s2Accuracy']['enable']:
+        if config['feedback']['block']['features']['s2Accuracy']['enable']:
             s2AccComprehension= [('s2Acc_%.2d' % s2,
                                   's2AccCritMet_%.2d' % s2) for s2 in range(nS2)]
             s2AccCols = list(chain(*s2AccComprehension))
@@ -1320,7 +1357,7 @@ def init_log(config):
 
         # Mean RT - s1
         # =====================================================================
-        if config['feedback']['block']['s1MeanRt']['enable']:
+        if config['feedback']['block']['features']['s1MeanRt']['enable']:
             s1RtComprehension= [('s1MeanRt_%.2d' % s1,
                                  's1MeanRtCritMet_%.2d' % s1) for s1 in range(nS1)]
             s1RtCols = list(chain(*s1RtComprehension))
@@ -1329,7 +1366,7 @@ def init_log(config):
 
         # Mean RT diff - s1
         # =====================================================================
-        if config['feedback']['block']['s1MeanRtDiff']['enable']:
+        if config['feedback']['block']['features']['s1MeanRtDiff']['enable']:
             s1RtDiffComprehension= [('s1MeanRtDiff_%.2d' % s1,
                                      's1MeanRtDiffCritMet_%.2d' % s1) for s1 in range(nS1)]
             s1RtDiffCols = list(chain(*s1RtDiffComprehension))
@@ -1574,6 +1611,12 @@ def init_config(runtime,configDir):
     ###########################################################################
 
     ###########################################################################
+    # CLOCK
+    ###########################################################################
+
+    config['clock'] = core.Clock()
+
+    ###########################################################################
     # LOG
     ###########################################################################
 
@@ -1771,23 +1814,26 @@ def present_instruction(config,type,*args):
         while noKeyPressed:
 
             # Collect responses
-            rdKeyCount, toggleKeyPressed = collect_response(rd,kb)
+            rdKeyCount, toggleKeysPressed = collect_response(rd,kb,otherKeys=toggleKeys)
 
             # If user pressed key move to next stimulus
             if sum(rdKeyCount.values()) > 0:
+                window.flip(clearBuffer=True)
                 stimIx += 1
                 break
 
             # If toggle keys are used move to next or previous stimulus
-            if toggleKeyPressed:
-                if toggleKeyPressed == toggleKeys[0]:
+            if toggleKeysPressed:
+                window.flip(clearBuffer=True)
+                if toggleKeysPressed == toggleKeys[0]:
                     stimIx -= 1
                     if stimIx < 0:
                         stimIx = 0
                     break
-                elif toggleKeyPressed == toggleKeys[1]:
+                elif toggleKeysPressed == toggleKeys[1]:
                     stimIx += 1
                     break
+
 def present_stimuli(window,stimList,u,f_on_off,log,timing):
     """
     <SUMMARY LINE>
@@ -1837,12 +1883,6 @@ def present_stimuli(window,stimList,u,f_on_off,log,timing):
             else:
                 stimList[stimIx].setAutoDraw(False)
 
-        while core.getTime() < (timing['ons'] +
-                                timing['dur'] +
-                                timing['ITIDur'] -
-                                timing['refreshTime']):
-            pass
-
         tFlip[frameIx] = window.flip()
 
     # Hide all trial stimuli and present ITI stimulus
@@ -1878,7 +1918,7 @@ def present_stimuli(window,stimList,u,f_on_off,log,timing):
         log.iloc[0][stimDisplayed[ix]+'DurDt'] = durDt
 
     return log
-def run_block(config,blockId,trialList,blockLog):
+def run_block(config,blockId,trialList,blockLog,trialOnsNextBlock):
     """
     <SUMMARY LINE>
 
@@ -1919,7 +1959,7 @@ def run_block(config,blockId,trialList,blockLog):
     trialStats      = config['statistics']['trial']
 
     trialEvalData   = config['evaluation']['trial']
-
+    feedbackDur     = config['feedback']['trial']['duration']
     sessColumns     = config['log']['performance']['sessColumns']
     sessData        = config['log']['performance']['sessData']
 
@@ -1951,21 +1991,32 @@ def run_block(config,blockId,trialList,blockLog):
         thisTrialLog = DataFrame(index = [trialListIx],
                                  columns = trialCols)
 
+        # Check if scanner should trigger trial
+        if config['mritrigger']['enable']:
+            if 'waitForTrigger' in trialList.columns:
+                waitForTrigger = trialList.ix[trialListIx]['waitForTrigger']
+            else:
+                waitForTrigger = False
+        else:
+            waitForTrigger = False
+
+        trialOns = trialList.loc[trialListIx,'trialOns']
+
         # Fill in session data
         # ---------------------------------------------------------------------
         thisTrialLog.loc[trialListIx,sessColumns] = sessData
 
         thisTrialLog, stimList, u, f_on_off, t_max = stim_to_frame_mat(config,trialList.ix[trialListIx],thisTrialLog)
 
-        # Clear buffer
-        # ---------------------------------------------------------------------
-        hub.clearEvents('all')
-        rd['client'].clearEvents()
-        kb['client'].clearEvents()
+        tTrialReady = config['clock'].getTime()
+        print 'Trial %d ready to start: t = %f s, dt = %f ms' % (trialListIx, tTrialReady, 1000*(tTrialReady - trialOns))
 
         # Run trial
         # ---------------------------------------------------------------------
         thisTrialLog    = run_trial(config,
+                                    waitForTrigger,
+                                    trialOns,
+                                    hub,
                                     thisTrialLog,
                                     trialTiming,
                                     window,
@@ -1976,29 +2027,24 @@ def run_block(config,blockId,trialList,blockLog):
                                     kb,
                                     trialStats,
                                     trialEvalData,
+                                    feedbackDur,
                                     stimuli)
-
-        # Update timings
-        trialTiming['ons']      = thisTrialLog['trialOns'].item()
-        trialTiming['dur']      = t_max
-        trialTiming['ITIDur']   = trialList.ix[trialListIx]['ITIDur']
 
         # Log trial data not logged inside run_trial
         # ---------------------------------------------------------------------
         thisTrialLog.loc[trialListIx,'blockId']     = blockId
-
         thisTrialLog.loc[trialListIx,'blockIx']     = blockIx
         thisTrialLog.loc[trialListIx,'trialIx']     = trialList.ix[trialListIx]['trialIx']
 
         # Session timing
-        sm, ss = divmod(trialTiming['ons'], 60)
+        sm, ss = divmod(thisTrialLog['trialOns'].item(), 60)
         sh, sm = divmod(sm, 60)
         thisTrialLog.loc[trialListIx,'tSession']    = '%d:%02d:%02d' % (sh, sm, ss)
 
         # Block timing
         if trialListIx == trialListIxs[0]:
-            blockOns = trialTiming['ons']
-        bs, bms = divmod(trialTiming['ons'] - blockOns,1)
+            blockOns = thisTrialLog['trialOns'].item()
+        bs, bms = divmod(thisTrialLog['trialOns'].item() - blockOns,1)
         bm, bs = divmod(bs, 60)
         bh, bm = divmod(bm, 60)
         thisTrialLog.loc[trialListIx,'tBlock']      = '%d:%02d:%02d.%03d' % (bh, bm, bs,bms*1000)
@@ -2007,12 +2053,12 @@ def run_block(config,blockId,trialList,blockLog):
         # ---------------------------------------------------------------------
         trialLog.ix[trialListIx] = thisTrialLog.ix[trialListIx]
 
-        tStart = time.time();
+        trialOns = time.time();
 
         with open(config['log']['performance']['trial']['file'],'a+') as fileObj:
             thisTrialLog.to_csv(fileObj, index=False, header=False, na_rep=np.nan)
 
-        print 'Time needed to write trialLog: %.3f ms' % (1000.*(time.time() - tStart))
+        print 'Time needed to write trialLog: %.3f ms' % (1000.*(time.time() - trialOns))
 
     # Compute block stats
     # =========================================================================
@@ -2020,7 +2066,8 @@ def run_block(config,blockId,trialList,blockLog):
     allCritMet = evaluate_block(config,
                                 df=df,
                                 blockId = blockId,
-                                blockLog = blockLog)
+                                blockLog = blockLog,
+                                trialOnsNextBlock=trialOnsNextBlock)
 
     return blockLog, allCritMet
 def run_phase(config,phaseId,trialList):
@@ -2078,6 +2125,14 @@ def run_phase(config,phaseId,trialList):
         thisBlockLog.loc[blockIx,'blockIx'] = blockIx
         thisBlockLog.loc[blockIx,'iterX'] = nIter
 
+        if blockIx == blockIxs[-1]:
+            trialOnsNextBlock = np.inf
+        else:
+
+            nextBlockIx = blockIxs[blockIx + 1]
+            trialList.loc[trialList['blockIx'] == nextBlockIx,'trialOns']
+            trialOnsNextBlock = trialList[trialList['blockIx'] == nextBlockIx].iloc[0]['trialOns']
+
         while not allCritMet:
 
             print 'Run %s block %d' % (phaseId,blockIx)
@@ -2089,7 +2144,8 @@ def run_phase(config,phaseId,trialList):
             thisBlockLog,allCritMet = run_block(config=config,
                                                 blockId = blockId,
                                                 trialList = trialListBlock,
-                                                blockLog=thisBlockLog)
+                                                blockLog=thisBlockLog,
+                                                trialOnsNextBlock=trialOnsNextBlock)
 
             # Write block log
             # ---------------------------------------------------------
@@ -2109,9 +2165,13 @@ def run_phase(config,phaseId,trialList):
 
                         # Warn subject that block will be repeated
                         present_instruction(config,'blockrepeat',0)
+
+                        # Reset clock to trialOns in trialList
+                        # config['clock']['tracking'].reset(trialListBlock.iloc[0]['trialOns'])
+                        config['clock'].reset(trialListBlock.iloc[0]['trialOns'])
             else:
                 break
-def run_trial(config,trialLog,trialTiming,window,stimList,u,f_on_off,rd,kb,trialStats,trialEvalData,stimuli):
+def run_trial(config,waitForTrigger,trialOns,hub,trialLog,trialTiming,window,stimList,u,f_on_off,rd,kb,trialStats,trialEvalData,feedbackDur,stimuli):
     """
     <SUMMARY LINE>
 
@@ -2140,6 +2200,32 @@ def run_trial(config,trialLog,trialTiming,window,stimList,u,f_on_off,rd,kb,trial
     <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
     """
 
+    # Wait for external trigger, or trial onset, or both
+    # -------------------------------------------------------------------------
+    if waitForTrigger:
+        triggered = None
+        while not triggered:
+            rdKeyCount, triggered = collect_response(rd=rd,
+                                                     kb=kb,
+                                                     otherKeys=config['mritrigger']['sync'])
+
+    if trialOns == 0:
+        # If this is the start of a session or block
+        config['clock'].reset()
+    while config['clock'].getTime() < (trialOns - 1.5*trialTiming['refreshTime']):
+        pass
+
+    tStart = config['clock'].getTime()
+
+    # Clear events
+    # -------------------------------------------------------------------------
+    hub.clearEvents('all')
+
+    if __debug__:
+        tEventsCleared = config['clock'].getTime()
+        print '* Events cleared: t = %f ms; dt = %f ms' % \
+              (1000*(tEventsCleared-tStart),1000*(tEventsCleared-tStart))
+
     # Present stimuli
     # -------------------------------------------------------------------------
     trialLog = present_stimuli(window=window,
@@ -2149,11 +2235,21 @@ def run_trial(config,trialLog,trialTiming,window,stimList,u,f_on_off,rd,kb,trial
                                log=trialLog,
                                timing=trialTiming)
 
+    if __debug__:
+        tStimPresented = config['clock'].getTime()
+        print '* Stimuli presented: t = %f ms, dt = %f ms' % \
+              (1000*(tStimPresented-tStart),1000*(tStimPresented-tEventsCleared))
+
     # Collect responses
     # -------------------------------------------------------------------------
     trialLog = collect_response(rd=rd,
                                 kb=kb,
                                 log=trialLog)
+
+    if __debug__:
+        tRespCollected = config['clock'].getTime()
+        print '* Responses collected: t = %f ms, dt = %f ms' % \
+              (1000*(tRespCollected-tStart),1000*(tRespCollected-tStimPresented))
 
     # Compute trial statistics
     # -------------------------------------------------------------------------
@@ -2161,12 +2257,23 @@ def run_trial(config,trialLog,trialTiming,window,stimList,u,f_on_off,rd,kb,trial
                                         rd=rd,
                                         log=trialLog)
 
+    if __debug__:
+        tStatsComputed = config['clock'].getTime()
+        print '* Stats computed: t = %f ms, dt = %f ms' % \
+              (1000*(tStatsComputed-tStart),1000*(tStatsComputed-tRespCollected))
+
     # Evaluate trial
     # -------------------------------------------------------------------------
     trialLog = evaluate_trial(evalData=trialEvalData,
+                              feedbackDur=feedbackDur,
                               window=window,
                               stimuli=stimuli,
                               log=trialLog)
+
+    if __debug__:
+        tFeedbackGiven = config['clock'].getTime()
+        print '* Feedback given: t = %f ms, dt = %f ms' % \
+              (1000*(tFeedbackGiven-tStart),1000*(tFeedbackGiven-tStatsComputed))
 
     # Wrap up
     # -------------------------------------------------------------------------
@@ -2238,13 +2345,28 @@ def time_to_frame(ons, dur, dt, t_max):
 
     Parameters
     ----------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
+    ons     : numpy.ndarray
+            1D-array of stimulus onset(s)
+
+    dur     : numpy.ndarray
+            1D-array of stimulus duration(s)
+
+    dt      : numpy.ndarray
+            Time step
+
+    t_max   : numpy.ndarray
+            Maximum stimulus presentation time
 
     Returns
     -------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
+    u       : numpy.ndarray
+            <DESCRIPTION>
+
+    f_on_off: numpy.ndarray
+            <DESCRIPTION>
+
+    t       : numpy.ndarray
+            <DESCRIPTION>
 
     Raises
     ------
@@ -2258,7 +2380,6 @@ def time_to_frame(ons, dur, dt, t_max):
     -------
     <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
     """
-
 
     ###########################################################################
     # 1. PROCESS INPUTS & SPECIFY VARIABLES
