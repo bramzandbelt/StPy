@@ -456,9 +456,23 @@ def evaluate_block(config,df,blockId,blockLog,trialOnsNextBlock):
                 descStat    = 0
 
         elif statType == 's1MeanRt':
-            descStat = (data.mean() * 1000).round()
+            if data.empty:
+                descStat = np.nan
+            else:
+                meanRt = data.mean() * 1000
+                if np.isnan(meanRt):
+                    descStat = np.nan
+                else:
+                    descStat = meanRt.round()
         elif statType == 's1MeanRtDiff':
-            descStat = (data.abs().mean() * 1000).round()
+            if data.empty:
+                descStat = np.nan
+            else:
+                meanRtDiff = data.abs().mean() * 1000
+                if np.isnan(meanRtDiff):
+                    descStat = np.nan
+                else:
+                    descStat = meanRtDiff.round()
         else:
             descStat = np.nan
 
@@ -531,10 +545,10 @@ def evaluate_block(config,df,blockId,blockLog,trialOnsNextBlock):
         # Performance
         # -----------------------------------------------------------------
 
-        statStr = {'s1Accuracy':    'accuracy:  %d%% correct',
-                   's2Accuracy':    'accuracy:  %d%% correct',
-                   's1MeanRt':      'speed:     %d ms',
-                   's1MeanRtDiff':  'synchrony: %d ms difference'}
+        statStr = {'s1Accuracy':    'accuracy:  %0.f%% correct',
+                   's2Accuracy':    'accuracy:  %0.f%% correct',
+                   's1MeanRt':      'speed:     %0.f ms',
+                   's1MeanRtDiff':  'synchrony: %0.f ms difference'}
 
         performText.setText(statStr[statType] % stat)
 
@@ -1166,7 +1180,7 @@ def init_log(config):
                        'experimenterId']
 
     idDataSess      = [config['study']['studyId'],
-
+                       config['study']['taskVersionId'],
                        config['session']['sessionId'],
                        config['session']['experimenterId']]
 
@@ -1522,7 +1536,7 @@ def init_config(runtime,configDir):
     window  = visual.Window(display.getPixelResolution(),
                             monitor = display.getPsychopyMonitorName(),
                             units = 'deg',
-                            fullscr = False,
+                            fullscr = True,
                             allowGUI = False,
                             screen = display.getIndex())
 
@@ -2139,7 +2153,7 @@ def run_phase(config,phaseId,trialList):
             trialOnsNextBlock = np.inf
         else:
 
-            nextBlockIx = blockIxs[blockIx + 1]
+            nextBlockIx = [blockIxs[index + 1] for index,value in enumerate(blockIxs) if value == blockIx]
             trialList.loc[trialList['blockIx'] == nextBlockIx,'trialOns']
             trialOnsNextBlock = trialList[trialList['blockIx'] == nextBlockIx].iloc[0]['trialOns']
 
