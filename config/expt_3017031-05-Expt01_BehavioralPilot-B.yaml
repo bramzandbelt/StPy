@@ -956,7 +956,7 @@ feedback:
                 enable: True
                 criterion: [[20,100],[20,100],[20,100],[80,100]]
                 feedbackPos: ['Well done!','Well done!','Well done!','Well done!']
-                feedbackNeg: ["Remember to respond when you see \u2663","Remember to stop left & right when you see \u2660","Remember to stop right when you see \u2665","Remember to stop left when you see \u2666"]
+                feedbackNeg: ["Remember to stop left when you see \u2663","Remember to stop right when you see \u2660","Remember to stop left & right when you see \u2665","Remember to respond when you see \u2666"]
             s1MeanRt:
                 enable: True
                 criterion: [0, 650]
