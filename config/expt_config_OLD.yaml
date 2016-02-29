@@ -1,0 +1,625 @@
+###############################################################################
+# 1. STUDY SETTINGS
+###############################################################################
+
+# title: A short but non-cryptic name of the experiment.
+#       Similar to what you might title a paper about the experiment.
+#
+title: Cognitive mechanisms of action-selective and stimulus-selective stopping
+
+# code:   A short, usually cryptic, code for the experiment. An experiment
+#         code is required when using the ioHub DataStore.
+#       An experiment code is 'required' when using the ioHub DataStore.
+#       While not technically inforced, it is a good practive to use a unique
+#       code for each experiment you create.
+#
+#       Here, the code is equal to the DCCN project identifier
+#
+code: '3017031-05-Expt01-A'
+
+# ethics_protocol_id: The identifier of the protocol of the ethics committee that approved the experiment
+#
+ethics_protocol_id: 'NL45659.091.14'
+
+# version: The version of the experiment being run, in string format.
+#       Each version on an experiment should have it's own experiment folder
+#       that has the experiment source and configuaration.
+#
+#   Consider here referring to version A and B (randomization)
+#
+version: '0.1'
+
+# description: Can be used to give longer, more informative text about what the experiment is for.
+#       Can also be used to indicate anything important to remember about running the experiment.
+#
+description: Here goes some description
+
+# display_experiment_dialog: If True, a read-only dialog will be displayed
+#       each time the experiment starts stating the above four parameter values.
+#       This can be useful so the person running the experiment can check that
+#        they started the right one!
+#
+display_experiment_dialog: True    # Default is False
+
+###############################################################################
+# 2. SESSION SETTINGS
+###############################################################################
+
+# session_variable_order: This setting accepts a list value, each element of which
+#   is a session variable key (either built-in or custom). The order the keys
+#   are provided in the list will be the order that each appears in the Session Input Dialog.
+session_variable_order: [name, code, experimenterId, comments, groupIx, subjectIx,sessionIx]
+
+# session_defaults: This parameter is defined as a sub dictionary containing
+# the experiment session metadata and user defined custom parameters.
+#
+session_defaults:
+
+    # name: Allows the entry of a short namefor the session. This can be the same across
+    #       multiple sessions within the experiment.
+    #
+    # We use the location where data is collected. (e.g. DCCN_cubicle_X, or DCCN_Skyra_3T)
+    #
+    name: NA
+
+    # code: A short code for the experiment session. Each run of the experiment must have
+    #       a unique session code. It the code enteried already exists in the experiments DataStore
+    #       An error is returned and a different code can be entered.
+    #
+    code: NA
+
+    # experimenterId: An identifier of the experimenter running the experiment.
+    #
+    experimenterId: Dr. X
+
+    # comments: Can be used to give any information the experiment operator
+    #       Thinks may be important to note about the session about to be run.
+    #
+    comments: Double check subject and session ID! Enter room/scanner where data is collected.
+
+    # user_variables: Allow for custom session data entry fields to be displayed in the Session Input Dialog.
+    #   If no extra session variables are needed, this section can be removed. The default is no
+    #   extra user defined variable.
+    #   To create user defines variables, add one line for each variable wanted to the user_variables
+    #   parameter section. The key of each line will be shown ad the label for the input.
+    #   The value of each line specifies the default value for string field,
+    #   and the possible values to be shown for a list field, which is displayed as a dropdown list in the dialog.
+    #   For list fileds, the first element of the list is the default.
+    #   Fields that have a boolean default are displayed as a checkbox.
+    user_variables:
+        groupIx: 0
+        subjectIx: 0
+        sessionIx: 0
+        practice: True
+        experiment: True
+
+# display_session_dialog: If True, an input dialog is shown
+#       each time the experiment starts allowing the operator to enter data for
+#       The session_default parameters and any user_variables defined.
+#
+display_session_dialog: True        # Default
+
+###############################################################################
+# 3. IOHUB SETTINGS
+###############################################################################
+
+# process_affinity: Specifies the processing units / cpu's that the PsychoPy
+#       Process should be allowed to run on. Not supported on OSX.
+#       An empty list indicates that the process should be able
+#       to run on any processing unit of the computer.
+#
+process_affinity: []                # Default
+
+# remaining_processes_affinity: Lists the processing units / cpu's that
+#       all other processes running on the computer (other than the ioHub Process)
+#       should be allowed to run on.
+#       An empty list indicates that the process should be able
+#       to run on any processing unit of the computer.
+#       Not supported on OSX.
+#
+remaining_processes_affinity: []    # Default
+
+# event_buffer_length: The maximum number of events that can be in the
+#       PsychoPy Process ioHub event cache. This is used when iohub.wait()
+#       is called and new events are received from the ioHub process.
+#
+event_buffer_length: 1024           # Default
+
+# Settings for the ioHub Process itself.
+#
+ioHub:
+    # Do you want the ioHub process to run ?  True == Yes
+    # False == why are you creating an ioHub confiuration file then? ;)
+    #
+    enable: True                    # Default
+
+    # process_affinity: Specifies the processing units / cpu's that the
+    #       ioHub Process should be allowed to run on.
+    #       An empty list indicates that the process should be able
+    #       to run on any processing unit of the computer.
+    #       Not supported on OSX.
+    #
+    process_affinity: []            # Default
+
+
+    # config: The name of the ioHub config file, specifying device
+    #       settings, etc
+    #
+    config: iohub_config.yaml       # Default
+
+###############################################################################
+# FILE STRUCTURE
+###############################################################################
+
+files:
+    datadir:
+    logdir:
+
+###############################################################################
+# INSTRUCTION
+###############################################################################
+
+instruction:
+    #
+    #
+    # Screens shown at the start of the session. This can be used for general instruction
+    #
+    start:
+        type: ImageStim
+        name: generalInstruction
+        content:
+           - data/instruction/newscreens/instruction.001.jpeg
+           - data/instruction/newscreens/instruction.002.jpeg
+#           - data/instruction/instruction.001.jpeg
+#           - data/instruction/instruction.002.jpeg
+#           - data/instruction/instruction.003.jpeg
+        ori: 0
+        pos: [0,0]
+    #
+    #
+    # Screens to show at beginning of the practice block(s)
+    #
+    practice:
+        instructionListFile: data/instruction/instruction_list_practice.csv
+        type: ImageStim
+        name: practiceInstruction
+        content:
+            - data/instruction/instruction.004.jpeg
+            - data/instruction/instruction.005.jpeg
+            - data/instruction/instruction.006.jpeg
+            - data/instruction/instruction.007.jpeg
+            - data/instruction/instruction.008.jpeg
+            - data/instruction/instruction.009.jpeg
+            - data/instruction/instruction.010.jpeg
+            - data/instruction/instruction.011.jpeg
+#            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.004.jpeg
+#            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.005.jpeg
+#            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.006.jpeg
+#            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.007.jpeg
+#            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.008.jpeg
+#            - D:\Ruben\CNS Master\Internship\PsychoPy\stpy\v0.1\data\instruction\instruction.009.jpeg
+        ori: 0
+        pos: [0,0]
+    #
+    #
+    # Screens to show at beginning of the experimental block(s)
+    #
+    experiment:
+        instructionListFile: data/instruction/instruction_list_experiment.csv
+        type: ImageStim
+        name: experimentInstruction
+        content:
+            - data/instruction/instruction.012.jpeg
+            - data/instruction/instruction.013.jpeg
+            - data/instruction/instruction.014.jpeg
+        ori: 0
+        pos: [0,0]
+
+    # If performance requirements are not met and a block will have to be
+    # repeated, the following instruction screen(s) will be shown.
+    #
+    # Content must consist of two files.
+    # The first should be the instruction screen that tells the subject that the block will be repeated.
+    # The second should be the instruction screen that tells the subject that the experiment will be terminated because performance fails criteria.
+    #
+    blockrepeat:
+        type: ImageStim
+        name: blockRepeat
+        content:
+            - data/instruction/instruction.016.jpeg
+            - data/instruction/instruction.017.jpeg
+        ori: 0
+        pos: [0,0]
+
+    #
+    #
+    # Screens to show at the end of the session (e.g. to display a thank you message)
+    #
+    end:
+        type: ImageStim
+        name: thankYouMessage
+        content:
+            - data/instruction/instruction.015.jpeg
+        ori: 0
+        pos: [0,0]
+
+###############################################################################
+# STIMULI
+###############################################################################
+
+stimConfig:
+    cue:
+        type:
+        name: cue
+        content:
+        color:
+        font:
+        height:
+        ori:
+        pos:
+    fix:
+        type: TextStim
+        name: fix
+        content: [+]
+        color: [255,255,255]
+        font: Arial
+        height: 2
+        ori: 0
+        pos: [0,0]
+    s1:
+        type: TextStim
+        name: [go_middle,go_index,go_middle,go_index,go_middle,go_index,go_middle,go_index,go_middle,go_index,go_middle,go_index,go_middle,go_index,go_middle,go_index,go_middle,go_index]
+        # content
+        # Unicode characters can also be used for content. They must be within
+        # double-quotes (rather than single-quotes)
+        #
+        #
+        content: [a,b,d,f,g,h,i,j,k,l,m,n,q,r,u,w,x,z]
+        font: PJ Hiragana
+        color: [255,255,255]
+        fontFile: ['data/trial_data/pj-hiragana.ttf']
+        height: 6
+        ori: 0
+        pos: [0,0]
+    s2:
+        type: TextStim
+        name: [stop_left,stop_right,stop_both,ignore]
+        #content: ["\u2662","\u2661","\u2664","\u2667"]
+        content: ["\u2666","\u2665","\u2660","\u2663"]
+        color: [[0,0,255],[0,0,255],[255,128,0],[255,128,0]]
+        font: Arial
+        height: 3
+        ori: 0
+        pos: [0,0]
+    feedback:
+        type: TextStim
+        name: feedback
+        content: ' '
+        color: [255,255,255]
+        font: Arial
+        height: 0.75
+        ori: 0
+        pos: [0,0]
+    iti:
+        type: TextStim
+        name: iti
+        content: ' '
+        color: [255,255,255]
+        font: Arial
+        height: 2
+        ori: 0
+        pos: [0,0]
+
+###############################################################################
+# RESPONSES
+###############################################################################
+
+# Response key settings
+#
+
+responses:
+    # responseKeysPerClass:
+    # The keys with which the subjects responds, separately for each response
+    # device class.
+    #
+    # If a response consists of multiple key presses, this is encoded as a list
+    # within a list. For example:
+    #
+    # [[a,b],[c,d]]
+    #
+    # This means that one response is associated with simultaneous key presses
+    # a and b, the other with key presses c and d.
+    #
+
+    responseKeysPerClass:
+        Keyboard: [[f,h],[v,b]]
+        Serial:   [[f,b],[e,a]]
+        fORP:     [[f,b],[e,a]]
+    # abortKeys:      The keyboard keys with which the experiment can be
+    #                 interrupted.
+    abortKeys: [escape,q]
+
+    # toggleKeys
+    #
+    # Keyboard keys to move backward and forward between instruction screens.
+    # This is useful if the participant accidently pressed a button.
+    toggleKeys: [left,right]
+    # pauseKeys:
+    # The keyboard keys with which the experiment can be paused temporarily.
+    pauseKeys: [p]
+
+###############################################################################
+# RANDOMIZATION
+###############################################################################
+
+randomize:
+    practice:
+        blocks: False
+        trials: False
+    experiment:
+        blocks: False
+        trials: False
+
+###############################################################################
+# PRACTICE
+###############################################################################
+
+practice:
+    # trialListFile
+    #
+    # Path to the .csv-file containing the trial list for the practice blocks
+    trialListFile: data/trial_data/trialListPractice.csv
+#    trialListFile: data/trial_data/trialListPractice_copy.csv
+    randomizeBlocks: False
+    randomizeTrials: False
+
+###############################################################################
+# EXPERIMENT
+###############################################################################
+
+experiment:
+    # trialListFile
+    #
+    # Path to the .csv-file containing the trial list for the experimental
+    # blocks
+    trialListFile: data/trial_data/trialList_Experiment01_B.csv
+    randomizeBlocks: False
+    randomizeTrials: False
+    #
+    # TODO: Implement this functionality
+    waitForTrigger: False
+
+###############################################################################
+# SOA
+###############################################################################
+# Stimulus onset asynchrony (SOA) settings
+#
+soa:
+    experimentblock:
+        initValueMethod: ['compute from','P2']
+        adjustmentMethod: 'none'
+        stepSize: 2
+        stepUnit: 'frame'
+        bounds: [0.25,1]
+
+    practiceblock:
+        # initValueMethod: specifies how initial SOA is set in a block.
+        #
+        # initValueMethod is a two-element list:
+        # 1. Method
+        # 'copy from'     - SOA is copied from the reference
+        # 'compute from'  - SOA is computed from the no-signal trials in the
+        #                   reference.
+        #
+        # 2. Reference:
+        # 'file'          - SOA comes is based on a file. This reference can
+        #                   only be used in combination with the method 'copy
+        #                   from'. If SOA is not specified in the file, an
+        #                   error is raised.
+        # 'previousBlock' - SOA is based on the preceding block. If the current
+        #                   block is the first block, SOA is based on the trial
+        #                   list in file 'file'.
+        # blockId         - SOA is based on the block with Id 'blockId'. If
+        #                   this block does not exists, an error is raised. If
+        #                   this block has yet to be run, SOA is based on the
+        #                   trial list in file 'file'.
+        # list            - SOA is based on values in a list. The list elements
+        #                   represent SOA values (in seconds). The length of
+        #                   the list should correspond number of unique SOA IDs
+        #                   in the trial list. This reference can only be used
+        #                   in combination with the method 'copy from'.
+        initValueMethod: ['copy from','file']
+
+        # adjustmentMethod: specifies how SOA is adjusted within a block.
+        #
+        # The method used, if any, to adjust stimulus onset asynchronies
+        # across trials based on performance. Options are:
+        # 'none'          - SOA is not adjusted within blocks
+        # '1-up-1-down'   - SOA is adjusted using a standard staircase method.
+        #                   SOA is increased following a signal-respond trial.
+        #                   SOA is decreased following a signal-inhibit trial.
+        #                   The in/decrease in SOA depends on the stepSize and
+        #                   stepUnit parameters.
+        adjustmentMethod: 'none'
+
+        # stepSize    The size of adjustments in SOA used by the adjustment
+        #             algorithm and when initial SOA values are based on a
+        #             practice block or the previous block.
+        #
+        stepSize: 2
+
+        # stepUnit    The units of the step size.
+        #
+        # 'second'
+        # 'frame'   recommended option
+        stepUnit: 'frame'
+
+        # bounds: two-element list of floats
+        #
+        # The first element represents the minimum SOA, the second element the
+        # maximum SOA allowed. Units are seconds.
+        bounds: [0.25,1]
+
+    # Initial SOA values for practice blocks
+    # - 'trialList' as specified in the practice trialList
+    # - array (e.g. [.050,.100,.150,.200,.250]) - To be implemented
+    initValuesPractice: 'trialList'
+
+    # Initial SOA values for experimental blocks
+    # - 'trialList' as specified in the experiment trialList
+    # - array (e.g. [.050,.100,.150,.200,.250]) - To be implemented
+    initValuesExperiment: 'trialList'
+
+    adjustment:
+      trial:
+      block:
+      practiceblock:
+
+
+
+
+
+
+    # soaAdjustmentMethod: str
+    #
+    # performance SOAs are determined based on performance of the previous
+    #             trial of the same soaIx category
+    # practice    SOAs are determined based on no-signal trial performance of
+    #             the last practice block
+    # none        SOAs as specified in the trialList file are used
+
+    soaAdjustmentMethod: practice
+    soaAdjustmentMethodSpec:
+
+
+    step: 2
+    stepUnits: frame
+
+###############################################################################
+# STATISTICS
+###############################################################################
+# Details which statistics need to be computed
+#
+#
+
+statistics:
+    trial:
+        # rt      Response time - interval between s1 onset and response
+        rt: True
+        # rtDiff  Response time difference. How the difference is computed
+        #         should follow logically from the list of rspKeys. E.g.
+        #         difference between sets of response keys:
+        #
+        #         rspKeys = [{'f','h'},{'v','b'}]
+        rtDiff: True
+
+        # rpt     Raw processing time - interval between s2 onset and response
+        #         See Salinas & Stanford (2013) J Neurosci
+        rpt: True
+    block:
+    practice_block:
+
+        # soa     Stimulus-onset asynchrony can be computed based on practice
+        #         block performance. We will use the same implementation as
+        #         Logan et al. (2014) Psych Rev.
+        soa: True
+
+###############################################################################
+# EVALUATION
+###############################################################################
+
+# Details how trials (and blocks?) are evaluated
+#
+# Trials:
+# - choice:       correct, error, omission
+# - inhibition:   correct, error
+# - RT:           correct, too slow, too fast
+#
+# Block:
+# -
+#
+# practiceBlock:
+# Bounds
+# - choice accuracy: [0.9, 1.0]
+# - median RT (s): [0, 0.80]
+# - absolute RT difference: [0,50]
+
+evaluation:
+    trial:
+        evalDataFile:
+            Keyboard: data/trial_data/trialEvalData_Keyboard.csv
+            Serial: data/trial_data/trialEvalData_Serial.csv
+            fORP:
+    block:
+
+###############################################################################
+# FEEDBACK
+###############################################################################
+
+feedback:
+    trial:
+        duration: 0.5
+        features:
+            accuracy: False
+            rt: False
+            rtDiff: False
+            nTrialCompleted: False
+            nTrialLeft: False
+    block:
+        #
+        #
+        duration: 10
+        features:
+            s1Accuracy:
+                enable: True
+                criterion: [85,100]
+                feedbackPos: 'Well done!'
+                feedbackNeg: 'Remember to be as accurate as possible'
+            s2Accuracy:
+                enable: True
+                criterion: [[20,100],[20,100],[20,100],[80,100]]
+                feedbackPos: ['Well done!','Well done!','Well done!','Well done!']
+                feedbackNeg: ["Remember to stop left when you see \u2666","Remember to stop right when you see \u2665","Remember to stop left & right when you see \u2660","Remember to respond when you see \u2663"]
+            s1MeanRt:
+                enable: True
+                criterion: [0, 650]
+                feedbackPos: 'Well done!'
+                feedbackNeg: 'Remember to be as fast as possible'
+            s1MeanRtDiff:
+                enable: True
+                criterion: [0,50]
+                feedbackPos: 'Well done!'
+                feedbackNeg: 'Remember to make synchronous responses'
+
+###############################################################################
+# PERFORMANCE REQUIREMENTS
+###############################################################################
+
+performanceRequirements:
+    experiment:
+        forceRepeat: False
+        maxNIter: 4
+    practice:
+        forceRepeat: True
+        maxNIter: 4
+
+###############################################################################
+# LOG
+###############################################################################
+# log:
+# Specifies the data that will be logged
+#
+log:
+    # runtime:
+    # Whether or not runtime info should be written to disk (boolean)
+    runtime:
+        enable: True
+    performance:
+        # trial:      Whether trial performance should be written to disk
+        #             (boolean)
+        trial:
+            enable: True
+        # block:      Whether block performance should be written to disk
+        #             (boolean)
+        block:
+            enable: True
