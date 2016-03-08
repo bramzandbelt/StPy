@@ -1,7 +1,7 @@
 __author__ = 'bramzandbelt'
 
 # Import packages
-from psychopy import visual, monitors, core, event, iohub, info
+from psychopy import visual, monitors, core, event, iohub, info, gui
 from psychopy.hardware.emulator import launchScan
 print 'psychopy version: %s' % info.psychopyVersion
 import os
@@ -1496,6 +1496,64 @@ def init_config(runtime,configDir):
     config['session'] = session
 
     ###########################################################################
+    # LOG - PART 1: CHECK IF THE EXPERIMENTER ENTERED THE CORRECT DATA
+    ###########################################################################
+
+    groupIx         = config['subject']['groupIx']
+    subjectIx       = config['subject']['subjectIx']
+    sessionIx       = config['session']['sessionIx']
+    studyId         = config['study']['studyId']
+    taskVersionId   = config['study']['taskVersionId']
+    exptDir         = os.path.abspath(os.path.join(configDir, os.pardir))
+
+    # Make a log directory, if it does not exist
+    if config['log']['dir']:
+        logDir = os.path.normcase(os.path.join(config['log']['dir'],studyId))
+    else:
+        logDir = os.path.normcase(os.path.join(exptDir,'log/',studyId))
+
+    if not os.path.isdir(logDir):
+        os.mkdir(logDir)
+
+    strFormatPerformance    = '%s_Study_%s_TaskVersion_%s_Group_%.2d_Subject_%.3d'
+
+    trialLogFileName        = strFormatPerformance % ('trialLog',
+                                                      studyId,
+                                                      taskVersionId,
+                                                      groupIx,
+                                                      subjectIx)
+    trialLogFile            = os.path.normcase(os.path.join(logDir, trialLogFileName + '.csv'))
+
+    # If the file exists, check if it contains data corresponding to sessionIx
+    if os.path.isfile(trialLogFile):
+        groupIx     = config['subject']['groupIx']
+        subjectIx   = config['subject']['subjectIx']
+
+        trialLog = pd.read_csv(trialLogFile)
+
+        if sessionIx in trialLog.sessionIx.values:
+            warnDlg = gui.Dlg(title="WARNING",
+                              labelButtonOK=u' Continue ',
+                              labelButtonCancel=u' Cancel ')
+            warnDlg.addText('You specified the following settings:')
+            warnDlg.addFixedField('Group index:',groupIx)
+            warnDlg.addFixedField('Subject index:', subjectIx)
+            warnDlg.addFixedField('Session index:',sessionIx)
+            warnDlg.addText('')
+            warnDlg.addText('You might have entered the wrong data. A log file with these data already exists:')
+            warnDlg.addText(trialLogFile)
+            warnDlg.addText('')
+            warnDlg.addText('Press Continue if you want to use the above settings and overwrite/append this file.')
+            warnDlg.addText('Press Cancel if you want to change settings.')
+
+            warnDlg.show()
+
+            if not warnDlg.OK:
+                return -1
+
+
+
+    ###########################################################################
     # APPARATUS
     ###########################################################################
 
@@ -1646,27 +1704,12 @@ def init_config(runtime,configDir):
     config['clock'] = core.Clock()
 
     ###########################################################################
-    # LOG
+    # LOG - PART 2: INITIATE LOG FILES
     ###########################################################################
-
-    # Make a log directory, if it does not exist
-    studyId = config['study']['studyId']
-    taskVersionId = config['study']['taskVersionId']
-    exptDir = os.path.abspath(os.path.join(configDir, os.pardir))
-
-    if config['log']['dir']:
-        logDir = os.path.normcase(os.path.join(config['log']['dir'],studyId))
-    else:
-        logDir = os.path.normcase(os.path.join(exptDir,'log/',studyId))
-
-    if not os.path.isdir(logDir):
-        os.mkdir(logDir)
-
-    strFormatRuntime        = '%s_Study_%s_Group_%.2d_Subject_%.3d_Session_%.2d_%s_%s'
-    strFormatPerformance    = '%s_Study_%s_TaskVersion_%s_Group_%.2d_Subject_%.3d'
 
     # Run time info
     # -------------------------------------------------------------------------
+    strFormatRuntime        = '%s_Study_%s_Group_%.2d_Subject_%.3d_Session_%.2d_%s_%s'
 
     if config['log']['runtime']['enable']:
 
@@ -1701,17 +1744,17 @@ def init_config(runtime,configDir):
 
         config['log']['performance']['trial']['columns'] = trialCols
 
-        fileName = strFormatPerformance % ('trialLog',
-                                           config['study']['studyId'],
-                                           config['study']['taskVersionId'],
-                                           config['subject']['groupIx'],
-                                           config['subject']['subjectIx'])
+        trialLogFileName = strFormatPerformance % ('trialLog',
+                                                   config['study']['studyId'],
+                                                   config['study']['taskVersionId'],
+                                                   config['subject']['groupIx'],
+                                                   config['subject']['subjectIx'])
 
-        filePath = os.path.normcase(os.path.join(logDir, fileName + '.csv'))
+        trialLogFile = os.path.normcase(os.path.join(logDir, trialLogFileName + '.csv'))
 
-        config['log']['performance']['trial']['file'] = filePath
+        config['log']['performance']['trial']['file'] = trialLogFile
 
-        if not os.path.isfile(filePath):
+        if not os.path.isfile(trialLogFile):
             with open(filePath,'a+') as fileObj:
                 DataFrame(index = [], columns = trialCols).to_csv(fileObj, index=False, header=True)
 
@@ -1719,17 +1762,17 @@ def init_config(runtime,configDir):
 
         config['log']['performance']['block']['columns'] = blockCols
 
-        fileName = strFormatPerformance % ('blockLog',
-                                           config['study']['studyId'],
-                                           config['study']['taskVersionId'],
-                                           config['subject']['groupIx'],
-                                           config['subject']['subjectIx'])
+        blockLogFileName = strFormatPerformance % ('blockLog',
+                                                   config['study']['studyId'],
+                                                   config['study']['taskVersionId'],
+                                                   config['subject']['groupIx'],
+                                                   config['subject']['subjectIx'])
 
-        filePath = os.path.normcase(os.path.join(logDir, fileName + '.csv'))
+        blockLogFile = os.path.normcase(os.path.join(logDir, blockLogFileName + '.csv'))
 
-        config['log']['performance']['block']['file'] = filePath
+        config['log']['performance']['block']['file'] = blockLogFile
 
-        if not os.path.isfile(filePath):
+        if not os.path.isfile(blockLogFile):
             with open(filePath,'a+') as fileObj:
                 DataFrame(index = [], columns = blockCols).to_csv(fileObj, index=False, header=True)
 

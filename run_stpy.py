@@ -49,38 +49,6 @@ class ExperimentRuntime(ioHubExperimentRuntime):
         modDir = args[0][1]
         config  = init_config(self,modDir)
 
-        sessionIx   = config['session']['sessionIx']
-
-        # Determine if data will be overwritten
-        trialLogFile = config['log']['performance']['trial']['file']
-
-        if os.path.isfile(trialLogFile):
-            groupIx     = config['subject']['groupIx']
-            subjectIx   = config['subject']['subjectIx']
-
-
-            trialLog = pd.read_csv(trialLogFile)
-
-            if sessionIx in trialLog.sessionIx:
-                warnDlg = gui.Dlg(title="WARNING",
-                                  labelButtonOK=u' Continue ',
-                                  labelButtonCancel=u' Cancel ')
-                warnDlg.addText('You specified the following settings:')
-                warnDlg.addFixedField('Group index:',groupIx)
-                warnDlg.addFixedField('Subject index:', subjectIx)
-                warnDlg.addFixedField('Session index:',sessionIx)
-                warnDlg.addText('')
-                warnDlg.addText('You might have entered the wrong data. A log file with these data already exists:')
-                warnDlg.addText(trialLogFile)
-                warnDlg.addText('')
-                warnDlg.addText('Press Continue if you want to use the above settings and overwrite/append this file.')
-                warnDlg.addText('Press Cancel if you want to change settings.')
-
-                warnDlg.show()
-
-                if not warnDlg.OK:
-                    return -1
-
         # Present welcome screen and general instruction
         # ---------------------------------------------------------------------
         present_instruction(config,'start')
