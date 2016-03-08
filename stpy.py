@@ -676,32 +676,43 @@ def evaluate_block(config,df,blockId,blockLog,trialOnsNextBlock):
     # Count how lines feedback
     nLines = len(blockFeedbackStim['stim'])
 
+    # Feedback title, containing block ID
+    blockTitleStim = get_empty_text_stim(window)
+    yPos = (float(nLines) - 1)/2 + 2
+    xPos = 0
+    blockTitleStim.setText('Block %s' % (blockId))
+    blockTitleStim.setPos((xPos,yPos))
+    blockTitleStim.setHeight(1)
+    blockTitleStim.alignHoriz = 'center'
+    blockTitleStim.setAutoDraw(True)
+
     # Loop over feedback lines
     for iStim in range(nLines):
 
-        # Set position of the s1 or s2 stimulus
-        yPos = (float(nLines) - 1)/2 - iStim
-        xPos = -12
-        blockFeedbackStim['stim'][iStim].setPos((xPos,yPos))
-        blockFeedbackStim['stim'][iStim].setHeight(0.75)
-        blockFeedbackStim['stim'][iStim].alignHoriz = 'left'
-        blockFeedbackStim['stim'][iStim].setAutoDraw(True)
+            # Set position of the stimulus
+            yPos = (float(nLines) - 1)/2 - iStim
+            xPos = -12
 
-        # Set position of performance stimulus
-        xPos = -5
-        blockFeedbackStim['performance'][iStim].setPos((xPos,yPos))
-        blockFeedbackStim['performance'][iStim].setHeight(0.75)
-        blockFeedbackStim['performance'][iStim].alignHoriz = 'left'
+            blockFeedbackStim['stim'][iStim].setPos((xPos,yPos))
+            blockFeedbackStim['stim'][iStim].setHeight(0.75)
+            blockFeedbackStim['stim'][iStim].alignHoriz = 'left'
+            blockFeedbackStim['stim'][iStim].setAutoDraw(True)
 
-        blockFeedbackStim['performance'][iStim].setAutoDraw(True)
+            # Set position of performance stimulus
+            xPos = -5
+            blockFeedbackStim['performance'][iStim].setPos((xPos,yPos))
+            blockFeedbackStim['performance'][iStim].setHeight(0.75)
+            blockFeedbackStim['performance'][iStim].alignHoriz = 'left'
 
-        # Set position of feedback stimulus
-        xPos = 5
-        blockFeedbackStim['feedback'][iStim].setPos((xPos,yPos))
-        blockFeedbackStim['feedback'][iStim].setHeight(0.75)
-        blockFeedbackStim['feedback'][iStim].alignHoriz = 'left'
+            blockFeedbackStim['performance'][iStim].setAutoDraw(True)
 
-        blockFeedbackStim['feedback'][iStim].setAutoDraw(True)
+            # Set position of feedback stimulus
+            xPos = 5
+            blockFeedbackStim['feedback'][iStim].setPos((xPos,yPos))
+            blockFeedbackStim['feedback'][iStim].setHeight(0.75)
+            blockFeedbackStim['feedback'][iStim].alignHoriz = 'left'
+
+            blockFeedbackStim['feedback'][iStim].setAutoDraw(True)
 
     window.flip()
 
@@ -717,6 +728,7 @@ def evaluate_block(config,df,blockId,blockLog,trialOnsNextBlock):
     else:
         core.wait(trialOnsNextBlock - tNow - 2)
 
+    blockTitleStim.setAutoDraw(False)
     for iStim in range(nLines):
         blockFeedbackStim['stim'][iStim].setAutoDraw(False)
         blockFeedbackStim['performance'][iStim].setAutoDraw(False)
