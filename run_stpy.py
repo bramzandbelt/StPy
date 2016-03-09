@@ -46,8 +46,9 @@ class ExperimentRuntime(ioHubExperimentRuntime):
 
         # Parse and process configuration
         # ---------------------------------------------------------------------
-        modDir = args[0][1]
-        config  = init_config(self,modDir)
+        modDir =        args[0][1]
+        config          = init_config(self,modDir)
+        sessionIx       = config['session']['sessionIx']
 
         # Present welcome screen and general instruction
         # ---------------------------------------------------------------------
