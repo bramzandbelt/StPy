@@ -782,34 +782,94 @@ def evaluate_trial(evalData,feedbackDur,window,stimuli,log):
 
     # Trial evaluation
     # =========================================================================
-    source = evalData['evalData'].fillna(float('inf'))
-    patternDict = log[source.columns].fillna(float('inf')).to_dict()
-    ix = log.index.tolist()[0]
-    pattern = {key: [value[ix]] for key,value in patternDict.iteritems()}
 
+    ix = log.index.tolist()[0]
+
+    # Match pattern, using stimulus and response data
+    source = evalData['evalData'].fillna(float('inf'))
+    patternDict= log[source.columns].fillna(float('inf')).to_dict()
+    pattern = {key: [value[ix]] for key,value in patternDict.iteritems()}
     iRow = source.isin(pattern).all(1)
 
-    labelValue = evalData['label'].loc[iRow].as_matrix().tolist()
-
     if sum(iRow) == 0:
+
         trialCorrect = False
-        trialLabel = 'no match'
-        trialFeedback = 'incorrect response'
 
-    if sum(iRow) == 1:
+        # If no match, try to match using stimulus data only to determine trialType
+        sourceStim = evalData['evalData'][['s1Ix','s2Ix']].fillna(float('inf'))
+        patternDictStim = log[sourceStim.columns].fillna(float('inf')).to_dict()
+        patternStim = {key: [value[ix]] for key,value in patternDictStim.iteritems()}
+        iRow = sourceStim.isin(patternStim).all(1)
 
-        trialCorrect = evalData['correct'].loc[iRow].as_matrix().tolist()[0]
-        trialLabel = ", ".join(labelValue)
-        trialFeedback = evalData['feedback'].loc[iRow].as_matrix().tolist()[0]
+        uniqueTrialTypes = evalData['trialType'].loc[iRow].unique()
+        if len(uniqueTrialTypes) == 0:
+            trialType = 'NOC' # Not otherwise classified
+        elif len(uniqueTrialTypes) == 1:
+            trialType = uniqueTrialTypes.tolist()[0]
+        else:
+            trialType = "Non-unique: %s" % ', '.join(uniqueVals.tolist())
 
-    if sum(iRow) > 1:
-        trialCorrect = False
-        trialLabel = 'multi match: ' + ", ".join(labelValue)
-        trialFeedback = 'incorrect response'
+        responseType = 'NOC' # Not otherwise classified
+        trialFeedback = 'incorrect'
 
-    log.iloc[0]['trialCorrect'] = trialCorrect
-    log.iloc[0]['trialType'] = trialLabel
-    log.iloc[0]['trialFeedback'] = trialFeedback
+    elif sum(iRow) == 1:
+
+        trialCorrect    = evalData['correct'].loc[iRow].as_matrix().tolist()[0]
+        trialType       = evalData['trialType'].loc[iRow].as_matrix().tolist()[0]
+        responseType    = evalData['responseType'].loc[iRow].as_matrix().tolist()[0]
+        trialFeedback   = evalData['feedback'].loc[iRow].as_matrix().tolist()[0]
+
+    elif sum(iRow) > 1:
+
+        # Determine if there is one unique trialCorrect value among selected rows
+        uniqueTrialCorrect = evalData['correct'].loc[iRow].unique()
+        if len(uniqueTrialCorrect) == 0:
+            trialCorrect = 'Unknown'
+        elif len(uniqueTrialCorrect) == 1:
+            trialCorrect = uniqueTrialCorrect.tolist()[0]
+        else:
+            trialCorrect = "Non-unique: %s" % ', '.join(uniqueTrialCorrect.tolist())
+
+        # Determine if there is one unique trialType among selected rows
+        uniqueTrialTypes = evalData['trialType'].loc[iRow].unique()
+        if len(uniqueTrialTypes) == 0:
+            trialType = 'NOC' # Not otherwise classified
+        elif len(uniqueTrialTypes) == 1:
+            trialType = uniqueTrialTypes.tolist()[0]
+        else:
+            trialType = "Non-unique: %s" % ', '.join(uniqueTrialTypes.tolist())
+
+        # Determine if there is one unique response type among selected rows
+        uniqueResponseTypes = evalData['responseType'].loc[iRow].unique()
+        if len(uniqueResponseTypes) == 0:
+            responseType = 'NOC' # Not otherwise classified
+        elif len(uniqueResponseTypes) == 1:
+            responseType = uniqueResponseTypes.tolist()[0]
+        else:
+            responseType = "Non-unique: %s" % ', '.join(uniqueResponseTypes.tolist())
+
+        # Determine if there is one unique trial feedback among selected rows
+        uniqueTrialFeedback = evalData['feedback'].loc[iRow].unique()
+        if len(uniqueTrialFeedback) == 0:
+            trialFeedback = 'incorrect' # Not otherwise classified
+        elif len(uniqueTrialFeedback) == 1:
+            trialFeedback = uniqueTrialFeedback.tolist()[0]
+        else:
+            trialFeedback = 'incorrect'
+
+        print('Warning: combination of stimuli and response(s) matches multiple criteria.')
+        print('--------------------------------------------------------------')
+        print('Stimuli and response(s) on this trial:')
+        pprint(pattern)
+        print('trialCorrect: \t %s' % (trialCorrect))
+        print('trialType: \t %s' % (trialType))
+        print('responseType: \t %s' % (responseType))
+        print('trialFeedback: \t %s' % (trialFeedback))
+
+    log.iloc[0]['trialCorrect']     = trialCorrect
+    log.iloc[0]['trialType']        = trialType
+    log.iloc[0]['responseType']     = responseType
+    log.iloc[0]['trialFeedback']    = trialFeedback
 
     # SOA adjustments
     # =========================================================================
@@ -1281,6 +1341,7 @@ def init_log(config):
         # =====================================================================
         feedbackColumns         = ['trialCorrect',
                                    'trialType',
+                                   'responseType',
                                    'trialFeedback']
 
         # Response event times
@@ -1603,12 +1664,20 @@ def init_config(runtime,configDir):
     ###########################################################################
     display = config['apparatus']['display']['client']
 
-    window  = visual.Window(display.getPixelResolution(),
-                            monitor = display.getPsychopyMonitorName(),
-                            units = 'deg',
-                            fullscr = True,
-                            allowGUI = False,
-                            screen = display.getIndex())
+    if __debug__:
+        window  = visual.Window(display.getPixelResolution(),
+                                monitor = display.getPsychopyMonitorName(),
+                                units = 'deg',
+                                fullscr = False,
+                                allowGUI = False,
+                                screen = display.getIndex())
+    else:
+        window  = visual.Window(display.getPixelResolution(),
+                                monitor = display.getPsychopyMonitorName(),
+                                units = 'deg',
+                                fullscr = True,
+                                allowGUI = False,
+                                screen = display.getIndex())
 
     frameRate = window.getActualFrameRate()
     frameTime = 1/frameRate
@@ -1644,7 +1713,8 @@ def init_config(runtime,configDir):
 
     config['evaluation']['trial']['evalData'] = trialEvalData[evalColumns].copy()
     config['evaluation']['trial']['correct'] = trialEvalData['trialCorrect'].copy()
-    config['evaluation']['trial']['label'] = trialEvalData['trialLabelAbbrev'].copy()
+    config['evaluation']['trial']['trialType'] = trialEvalData['trialType'].copy()
+    config['evaluation']['trial']['responseType'] = trialEvalData['trialResponseType'].copy()
     config['evaluation']['trial']['feedback'] = trialEvalData['trialFeedback'].copy()
 
     ###########################################################################
@@ -1718,7 +1788,7 @@ def init_config(runtime,configDir):
                                        verbose=True,
                                        userProcsDetailed=True)
 
-        fileName = strFormatRuntime % ('runTimeInfo',
+        runTimeInfoFileName = strFormatRuntime % ('runTimeInfo',
                                        config['study']['studyId'],
                                        config['subject']['groupIx'],
                                        config['subject']['subjectIx'],
@@ -1726,9 +1796,9 @@ def init_config(runtime,configDir):
                                        config['session']['date'],
                                        config['session']['time'])
 
-        filePath = os.path.normcase(os.path.join(logDir, fileName + '.csv'))
+        runTimeInfoFile = os.path.normcase(os.path.join(logDir, runTimeInfoFileName + '.csv'))
 
-        with open(filePath,'a+') as fileObj:
+        with open(runTimeInfoFile,'a+') as fileObj:
             fileObj.write(str(runTimeInfo))
 
     # Task performance
@@ -1755,7 +1825,7 @@ def init_config(runtime,configDir):
         config['log']['performance']['trial']['file'] = trialLogFile
 
         if not os.path.isfile(trialLogFile):
-            with open(filePath,'a+') as fileObj:
+            with open(trialLogFile,'a+') as fileObj:
                 DataFrame(index = [], columns = trialCols).to_csv(fileObj, index=False, header=True)
 
     if config['log']['performance']['block']['enable']:
@@ -1773,7 +1843,7 @@ def init_config(runtime,configDir):
         config['log']['performance']['block']['file'] = blockLogFile
 
         if not os.path.isfile(blockLogFile):
-            with open(filePath,'a+') as fileObj:
+            with open(blockLogFile,'a+') as fileObj:
                 DataFrame(index = [], columns = blockCols).to_csv(fileObj, index=False, header=True)
 
     return config
