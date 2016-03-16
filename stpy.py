@@ -100,36 +100,6 @@ def check_df_from_csv_file(df):
     return df
 def collect_response(rd,kb, *args, **kwargs):
     """
-    <SUMMARY LINE>
-
-    <EXTENDED DESCRIPTION>
-
-    Explain the somewhat complicated coding scheme: first we check if escape or other keys are pressed (typically keyboard), then we check if response device keys are pressed.
-    This is necessary because serial response box
-
-
-    Parameters
-    ----------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
-
-    Returns
-    -------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
-
-    Raises
-    ------
-    <EXCEPTIONS>
-
-    Usage
-    -----
-    <USAGE>
-
-    Example
-    -------
-    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
-
     Collect responses from response device and keyboard
 
     This function is called at two stages in the experiment:
@@ -140,29 +110,27 @@ def collect_response(rd,kb, *args, **kwargs):
 
     Parameters
     ----------
-    rd : type
-        blablabla
-    kb : type
-        blablabla
-    otherKeys
-    log
+    rd          : dict
+                specifies response device properties
+
+    kb          : dict
+                specifies keyboard properties
+
+    log         : pandas.core.frame.DataFrame
+                trial log
+
+    otherKeys   : list (optional)
+                specifies which other keys (from response device or keyboard)
+                to monitor
 
     Returns
     -------
-    log : type
-        blablabla
+    log         : pandas.core.frame.DataFrame (optional)
+                trial log; collect_responses fills in values for keyCount and
+                keyTime variables.
 
-    log = collect_response(rd,kb,log)
-
-    keycount : type
-        blablabla
-
-    keyCount = collect_response(rd,kb)
-
-    Raises
-    ------
-
-    USAGE
+    Usage
+    -----
     # For collecting experimental data
     log = collect_response(rd,kb,log)
 
@@ -285,34 +253,56 @@ def collect_response(rd,kb, *args, **kwargs):
         return keyCount, otherKeysPressed
 def compute_trial_statistics(trialStats,rd,log):
     """
-    Computes descriptive statistics, such as response time, response time
-    difference, and raw processing time
+    Computes and writes trial descriptive statistics
 
-    <SUMMARY LINE>
-
-    <EXTENDED DESCRIPTION>
+    Descriptive statistics categories include response time (rt), response time
+    difference (rtDiff), and raw processing time (rpt)
 
     Parameters
     ----------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
+    trialStats  : dict
+                specifies which of the following descriptive statistics need to
+                be computed:
+
+                rt      : bool
+                        whether or not to compute statistics related to
+                        response time (RT): RT of first and second key press
+                        (for each key), as well as mean, min, and max across
+                        keys
+
+                rtDiff  : bool
+                        whether or not to compute statistics related to
+                        response time difference: this is only of interest for
+                        situations in which a stimulus is associated with
+                        multiple key presses
+
+                rpt     : bool
+                        whether or not to compute statistics related to
+                        raw processing time (rpt), the time between s2 and RT
+                        onset: RPT for first and second key press
+                        (for each key), as well as mean, min, and max across
+                        keys
+
+    rd          : dict
+                specifies response device properties
+
+    log         : pandas.core.frame.DataFrame
+                trial log
 
     Returns
     -------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
+    log         : pandas.core.frame.DataFrame
+                trial log; compute_trial_statistics fills in values based on
+                the key-value pairs in trialStats:
 
-    Raises
-    ------
-    <EXCEPTIONS>
-
-    Usage
-    -----
-    <USAGE>
-
-    Example
-    -------
-    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
+                if trialStats['rt']:
+                    rt1_*, rt2_*, rt1_mean, rt2_mean, rt1_min, rt2_min,
+                    rt1_max, rt2_max
+                if trialStats['rtDiff']:
+                    rtDiff1_*, rtDiff2_*, rtDiff1_mean, rtDiff2_mean
+                if trialStats['rpt']:
+                    rpt1_*, rpt2_*, rpt1_mean, rpt2_mean, rpt1_min, rpt2_min,
+                    rpt1_max, rpt2_max
     """
 
     rspKeys = [item for sublist in rd['settings']['rspKeys'] for item in sublist]
@@ -384,37 +374,57 @@ def compute_trial_statistics(trialStats,rd,log):
 
     return log
 def evaluate_block(config,df,blockId,blockLog,trialOnsNextBlock):
-
     """
-    <SUMMARY LINE>
-
-    <EXTENDED DESCRIPTION>
+    Evaluate block performance
 
     Parameters
     ----------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
+    config              : dict
+                        specifies StPy experiment properties
+
+    df                  : pandas.core.frame.DataFrame
+                        trial log
+
+    blockId             : str or unicode
+                        identifier of the block
+
+    blockLog            : pandas.core.frame.DataFrame
+                        block log
+
+    trialOnsNextBlock   : numpy.int64
+                        time when next block should start; this is used to
+                        determine duration of block feedback
 
     Returns
     -------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
+    allCritMet          : bool
+                        whether or not all predefined task performance criteria
+                        have been met
 
-    Raises
-    ------
-    <EXCEPTIONS>
-
-    Usage
-    -----
-    <USAGE>
-
-    Example
-    -------
-    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
     """
 
     # Subfunctions
     def assess_performance(stat,lo,hi):
+        """
+        Evaluates whether statistic is withing lower and upper bounds
+
+        Parameters
+        ----------
+        stat    : dict
+                statistical value to be evaluated
+
+        lo      : int or float
+                lower bound
+
+        hi      : int or float
+                upper bound
+
+        Returns
+        -------
+        critMet : bool
+                specifies whether or not criterion is met
+
+        """
 
         if lo <= stat <= hi:
             critMet = True
@@ -423,6 +433,31 @@ def evaluate_block(config,df,blockId,blockLog,trialOnsNextBlock):
 
         return critMet
     def get_bounds(config,stat,ix):
+        """
+        Get lower and upper bounds for a given statistic
+
+        Parameters
+        ----------
+        config  : dict
+                specifies StPy experiment properties
+
+        stat    : str or unicode
+                descriptive statistic name
+
+        ix      : int
+                stimulus index (only used if bounds vary across stimulus
+                indices)
+
+        Returns
+        -------
+        lo      : int or float
+                lower bound of criterion
+
+        hi      : int or float
+                upper bound of criterion
+
+        """
+
         crit = config['feedback']['block']['features'][stat]['criterion']
 
         if isinstance(crit[0],list):
@@ -430,6 +465,32 @@ def evaluate_block(config,df,blockId,blockLog,trialOnsNextBlock):
         else:
             return min(crit), max(crit)
     def get_data(df,statType,trialType,stimType,stimIx):
+        """
+        Obtain data from DataFrame based on which descriptive statistics are computed
+
+        Parameters
+        ----------
+        df          : pandas.core.series.DataFrame
+                    trial log
+
+        statType    : str or unicode
+                    statistic on which feedback is presented
+
+        trialType   : pandas.core.series.Series
+                    boolean array acting as selector of trials (rows)
+
+        stimType    : pandas.core.series.Series
+                    array of stimulus indices
+
+        stimIx      : int
+                    stimulus index
+
+        Returns
+        -------
+        data        : pandas.core.series.Series
+                    data on which descriptive statistic are computed
+
+        """
 
         bla = {'s1Accuracy':    df.trialCorrect[trialType & (stimType == stimIx)].value_counts(),
                's2Accuracy':    df.trialCorrect[trialType & (stimType == stimIx)].value_counts(),
@@ -440,6 +501,23 @@ def evaluate_block(config,df,blockId,blockLog,trialOnsNextBlock):
 
         return data
     def get_desc_stat(data,statType):
+        """
+        Compute descriptive statistic on data
+
+        Parameters
+        ----------
+        data        : int or float
+                    data on which descriptive statistic is computed
+
+        statType    : str or unicode
+                    statistic on which feedback is presented
+
+        Returns
+        -------
+        descStat    : int or float
+                    descriptive statistic
+
+        """
 
         # Assertions
         knownStatTypes = ['s1Accuracy','s2Accuracy','s1MeanRt','s1MeanRtDiff']
@@ -478,6 +556,30 @@ def evaluate_block(config,df,blockId,blockLog,trialOnsNextBlock):
 
         return descStat
     def get_feedback_message(config,stat,ix):
+        """
+        Determine what feedback should be presented
+
+        Parameters
+        ----------
+        config      : dict
+                    specifies StPy experiment properties
+
+        stat        : str or unicode
+                    descriptive statistic name
+
+        ix          : int
+                    list index
+
+        Returns
+        -------
+        posMes      : str, unicode, or list
+                    feedback message if performance criterion is met
+
+        negMes      : str, unicode, or list
+                    feedback message if performance criterion is not met
+
+        """
+
         posMes = config['feedback']['block']['features'][stat]['feedbackPos']
         negMes = config['feedback']['block']['features'][stat]['feedbackNeg']
 
@@ -499,6 +601,35 @@ def evaluate_block(config,df,blockId,blockLog,trialOnsNextBlock):
 
         return str(pos), str(neg)
     def update_feedback_log(log,stimIx,stat,statType,critMet):
+        """
+        Update block log
+
+        Logs performance level and whether or not preset performance criterion
+        is met.
+
+        Parameters
+        ----------
+        log         : pandas.core.frame.DataFrame
+                    block log
+
+        stimIx      : int
+                    stimulus index
+
+        stat        : numpy.float64 or numpy.int
+                    performance
+
+        statType    : str or unicode
+                    statistic on which feedback is presented
+
+        critMet     : bool
+                    whether or not performance criterion is met
+
+        Returns
+        -------
+        log         : pandas.core.frame.DataFrame
+                    block log
+
+        """
 
         # Dict of formatted strings, referring to columns in log
         strStatCol      = {'s1Accuracy':    's1Acc_%.2d',
@@ -520,11 +651,43 @@ def evaluate_block(config,df,blockId,blockLog,trialOnsNextBlock):
 
         return log
     def update_feedback_screen(win,feedbackStim,stim,stat,statType,critMet,posMes,negMes):
-        #
-        #
-        #
-        #
-        #
+        """
+        Update feedback stimulus
+
+        Parameters
+        ----------
+        win             : psychopy.visual.window.Window
+                        PsychoPy window object, in which stimuli are presented
+
+        feedbackStim    : dict
+                        Specifies aspects of the feedback: stimulus identity,
+                        performance, and feedback message
+
+        stim            : psychopy.visual.text.TextStim or psychopy.visual.text.ImageStim
+                        PsychoPy stimulus to which feedback relates
+
+        stat            : numpy.float64 or numpy.int
+                        performance
+
+        statType        : str or unicode
+                        statistic on which feedback is presented
+
+        critMet         : bool
+                        whether or not performance criterion is met
+
+        posMes          : str or unicode
+                        feedback message if performance criterion is met
+
+        negMes          : str or unicode
+                        feedback message if performance criterion is not met
+
+        Returns
+        -------
+        feedbackStim    : dict
+                        Specifies aspects of the feedback: stimulus identity,
+                        performance, and feedback message
+
+        """
 
         # Define some variables
         # -----------------------------------------------------------------
@@ -738,31 +901,57 @@ def evaluate_block(config,df,blockId,blockLog,trialOnsNextBlock):
     return allCritMet
 def evaluate_trial(evalData,feedbackDur,window,stimuli,log):
     """
-    <SUMMARY LINE>
-
-    <EXTENDED DESCRIPTION>
+    Evaluate trial performance and present trial feedback
 
     Parameters
     ----------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
+    evalData    : dict
+                specifies information about how trial should be evaluated,
+                this includes:
+
+                evalDataFile    : dict
+                                specifies trial evaluation data files for each
+                                of the possible response devices
+                evalData        : pandas.core.frame.DataFrame
+                                all stimulus-response combinations specified
+                                in the trial evaluation data file
+
+                correct         : pandas.core.series.Series
+                                accuracy for each of the stimulus-response
+                                combinations
+
+                responseType    : pandas.core.series.Series
+                                response type for each of the stimulus-response
+                                combinations
+
+                feedback        : pandas.core.series.Series
+                                feedback for each of the stimulus-response
+                                combinations
+
+                trialType       : pandas.core.series.Series
+                                trial type for each of the stimulus-response
+                                combinations
+
+    feedbackDur : float
+                trial feedback duration (in seconds)
+
+    window      : psychopy.visual.window.Window
+                PsychoPy window object, in which stimuli are presented
+
+    stimuli     : dict
+                specifies PsychoPy stimuli, including the feedback and inter-
+                trial interval stimulus
+
+    log         : pandas.core.frame.DataFrame
+                trial log
 
     Returns
     -------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
+    log         : pandas.core.frame.DataFrame
+                trial log; evaluate_trial fills in values for the following
+                variables: trialCorrect, trialType, responseType, and
+                trialFeedback
 
-    Raises
-    ------
-    <EXCEPTIONS>
-
-    Usage
-    -----
-    <USAGE>
-
-    Example
-    -------
-    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
     """
 
     # Process inputs
@@ -903,31 +1092,34 @@ def evaluate_trial(evalData,feedbackDur,window,stimuli,log):
     return log
 def get_empty_text_stim(window):
     """
-    <SUMMARY LINE>
+    Returns an empty PsychoPy text stimulus object
 
-    <EXTENDED DESCRIPTION>
+    This object has the following properties:
+
+    text        = '',
+    font        = 'Arial',
+    pos         = (0,0),
+    color       = [1.0, 1.0, 1.0],
+    colorSpace  = 'rgb',
+    opacity     = 1.0,
+    bold        = False,
+    italic      = False,
+    alignHoriz  = 'center',
+    alignVert   = 'center',
+    wrapWidth   = None,
+    autoLog     = None
+
 
     Parameters
     ----------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
+    window      : psychopy.visual.window.Window
+                PsychoPy window object, in which stimuli are presented
 
     Returns
     -------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
+    textStim    : psychopy.visual.TextStim
+                PsychoPy text stimulus object
 
-    Raises
-    ------
-    <EXCEPTIONS>
-
-    Usage
-    -----
-    <USAGE>
-
-    Example
-    -------
-    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
     """
     textStim = visual.TextStim(window,
                         text='',
@@ -948,50 +1140,27 @@ def get_empty_text_stim(window):
     return textStim
 def define_stimulus(window,stimInfo,*args):
     """
-    Make PsychoPy stimuli
+    Make PsychoPy stimuli based on user input
 
     Currently, only stimuli of type TextStim and ImageStim are supported.
 
     Parameters
     ----------
-    window : class?
-        window where stimuli will be shown
-    stimInfo : dict
-        key-value pairs
+    window      : psychopy.visual.window.Window
+                PsychoPy window object, in which stimuli are presented
+
+    stimInfo    : dict
+                stimulus information specified by user in experiment
+                configuration file
+
+    stimType    : str or unicode (optional)
+                stimulus type
 
     Returns
     -------
-    stimulus:
+    stimulus    : dict
+                specifies properties of the stimuli
 
-    Raises
-    ------
-
-
-    <SUMMARY LINE>
-
-    <EXTENDED DESCRIPTION>
-
-    Parameters
-    ----------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
-
-    Returns
-    -------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
-
-    Raises
-    ------
-    <EXCEPTIONS>
-
-    Usage
-    -----
-    <USAGE>
-
-    Example
-    -------
-    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
     """
 
     # Process inputs
@@ -1093,46 +1262,82 @@ def stim_to_frame_mat(config,trial,log):
 
     Parameters
     ----------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
+    config      : dict
+                specifies StPy experiment properties
+
+    trial       : pandas.core.series.Series
+                boolean array acting as selector of trials (rows)
+
+    log         : pandas.core.frame.DataFrame
+                trial log
 
     Returns
     -------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
+    log         : pandas.core.frame.DataFrame
+                trial log; stim_to_frame_mat fills in stimulus properties,
+                including information about onsets, durations
 
-    Raises
-    ------
-    <EXCEPTIONS>
+    stim_list   : list
+                list of PsychoPy stimuli
 
-    Usage
-    -----
-    <USAGE>
+    u           : numpy.ndarray
+                stimulus-by-frame array specifying for each combination of
+                stimulus (row) and frame (column) whether or not the stimulus
+                should be displayed
 
-    Example
-    -------
-    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
+    f_on_off    : numpy.ndarray
+                stimulus-by-2 array specifying the frame indices of stimulus
+                onset (first column) and stimulus offset (second column)
+
+    trial_dur   : numpy.ndarray
+                trial duration (in seconds), based on onsets and durations of
+                the fixation, cue, s1, and s2 stimulus.
+
     """
 
     trialLogIx = log.index.tolist()[0]
 
     stimuli = config['stimuli']
 
-    def append_it(trial,log,stim,stimList,ons,dur):
+    def append_it(trial,log,stim,stim_list,ons,dur):
         """
 
-        :param trial:
-        :param stim:
-        :param stimList:
-        :param ons:
-        :param dur:
-        :param log:
+        Appends stimulus list
 
-        :return stimList:
-        :return ons:
-        :return dur:
-        :return log:
-        :return iStim:
+        Parameters
+        ----------
+        trial       : pandas.core.series.Series
+                    trial data
+
+        log         : pandas.core.frame.DataFrame
+                    trial log
+
+        stim        : str or unicode
+                    stimulus name
+
+        stim_list   : list
+                    list of stimuli
+
+        ons         : numpy.ndarray
+                    array of stimulus onsets
+
+        dur         : numpy.ndarray
+                    array of stimulus durations
+
+        Returns
+        -------
+        stim_list   : list
+                    list of stimuli
+
+        newOns      : numpy.ndarray
+                    array of stimulus onsets
+
+        newDur      : numpy.ndarray
+                    array of stimulus durations
+
+        log         : pandas.core.frame.DataFrame
+                    trial log
+
         """
 
         if not pd.isnull(trial[stim + 'Ix']):
@@ -1141,7 +1346,7 @@ def stim_to_frame_mat(config,trial,log):
             i = trial.loc[stim + 'Ix'].astype(int)
 
             # Append stimulus list, onset array, and duration array
-            stimList.append(stimuli[stim][i])
+            stim_list.append(stimuli[stim][i])
             stimOns    = float(trial[stim + 'Ons'])
             stimDur    = float(trial[stim + 'Dur'])
             newOns     = np.hstack([ons,stimOns])
@@ -1168,71 +1373,57 @@ def stim_to_frame_mat(config,trial,log):
                 log.loc[trialLogIx,['soaIx']]   = np.nan
 
 
-        return stimList, newOns, newDur, log
+        return stim_list, newOns, newDur, log
 
-    stimList    = []
+    stim_list    = []
     ons         = np.array([],dtype=int)
     dur         = np.array([],dtype=int)
 
     stimSet     = set(config['stimuli'].keys())
 
     for stim in stimSet.intersection(['fix','cue','s1','s2']):
-        stimList, ons, dur, log = append_it(trial=trial,
+        stim_list, ons, dur, log = append_it(trial=trial,
                                             log=log,
                                             stim=stim,
-                                            stimList=stimList,
+                                            stim_list=stim_list,
                                             ons=ons,
                                             dur=dur)
 
-    # Append iti stimulus to stimList
-    stimList.append(stimuli['iti'][0])
+    # Append iti stimulus to stim_list
+    stim_list.append(stimuli['iti'][0])
 
     dt = np.array([1./config['window']['frameRate']])
-    t_max = np.array(np.max(ons + dur))
+    trial_dur = np.array(np.max(ons + dur))
 
     # Make stimulus-by-frame matrix (u)
-    u, f_on_off, t = time_to_frame(ons=ons, dur=dur, dt=dt, t_max=t_max)
+    u, f_on_off, t = time_to_frame(ons=ons, dur=dur, dt=dt, trial_dur=trial_dur)
 
-    return log, stimList, u, f_on_off, t_max
+    return log, stim_list, u, f_on_off, trial_dur
 def init_log(config):
     """
-    Initializes a pandas DataFrame for logging stop task data
+    Initializes and saves a pandas DataFrame for logging stop task data and
+    returns
 
     Parameters
     ----------
-    config : dict
-        configuration dictionary, containing experiment information
+    config      : dict
+                specifies StPy experiment properties
 
     Returns
     -------
-    log : pandas.core.frame.DataFrame
+    trialCols   : list
+                columns in trial log
+
+    blockCols   : list
+                columns in block log
+
+    sessColumns : list
+                columns in trial log and block log containing session-specific data
+
+    sessData    : list
+                session-specific data
 
 
-    <SUMMARY LINE>
-
-    <EXTENDED DESCRIPTION>
-
-    Parameters
-    ----------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
-
-    Returns
-    -------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
-
-    Raises
-    ------
-    <EXCEPTIONS>
-
-    Usage
-    -----
-    <USAGE>
-
-    Example
-    -------
-    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
     """
 
 
@@ -1480,34 +1671,26 @@ def init_log(config):
     ###########################################################################
 
     return trialCols, blockCols, sessColumns, sessData
-def init_config(runtime,configDir):
+def init_config(runtime,modDir):
     """
-    Parse and process experiment configuration
+    Parse and process experiment configuration file.
 
-
-    <EXTENDED DESCRIPTION>
+    For details about its contents, see the experiment configurations file.
 
     Parameters
     ----------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
+    runtime     : __main__.ExperimentRuntime
+                ioHubExperimentRuntime object, which brings together several aspects of the
+                ioHub Event Monitoring Framework.
+
+    modDir      : str or unicode
+                directory where StPy module resides.
 
     Returns
     -------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
+    config      : dict
+                specifies StPy experiment properties
 
-    Raises
-    ------
-    <EXCEPTIONS>
-
-    Usage
-    -----
-    <USAGE>
-
-    Example
-    -------
-    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
     """
 
     config = runtime.getConfiguration()
@@ -1565,7 +1748,7 @@ def init_config(runtime,configDir):
     sessionIx       = config['session']['sessionIx']
     studyId         = config['study']['studyId']
     taskVersionId   = config['study']['taskVersionId']
-    exptDir         = os.path.abspath(os.path.join(configDir, os.pardir))
+    exptDir         = os.path.abspath(os.path.join(modDir, os.pardir))
 
     # Make a log directory, if it does not exist
     if config['log']['dir']:
@@ -1590,7 +1773,8 @@ def init_config(runtime,configDir):
         groupIx     = config['subject']['groupIx']
         subjectIx   = config['subject']['subjectIx']
 
-        trialLog = pd.read_csv(trialLogFile)
+        trialLog = pd.read_csv(trialLogFile,
+                               error_bad_lines=False)
 
         if sessionIx in trialLog.sessionIx.values:
             warnDlg = gui.Dlg(title="WARNING",
@@ -1679,7 +1863,17 @@ def init_config(runtime,configDir):
                                 allowGUI = False,
                                 screen = display.getIndex())
 
-    frameRate = window.getActualFrameRate()
+    frameRate = None
+    cntr = 0
+    while frameRate is None:
+        cntr = cntr + 1
+        frameRate = window.getActualFrameRate()
+
+        if cntr >= 3:
+            print 'Cannot get frame rate after %d attempts.' % (cntr)
+            print 'Terminating PsychoPy. Try and restart the program.'
+            core.quit()
+
     frameTime = 1/frameRate
     config['window'] = {'window': window,
                         'frameRate': frameRate,
@@ -1702,7 +1896,8 @@ def init_config(runtime,configDir):
     ###########################################################################
     # EVALUATION
     ###########################################################################
-    trialEvalData = pd.read_csv(config['evaluation']['trial']['evalDataFile'][rdClass])
+    trialEvalData = pd.read_csv(config['evaluation']['trial']['evalDataFile'][rdClass],
+                                error_bad_lines=False)
     trialEvalData = check_df_from_csv_file(trialEvalData)
 
 
@@ -1728,11 +1923,13 @@ def init_config(runtime,configDir):
 
 
 
-    instrListP = pd.read_csv(config['instruction']['practice']['instructionListFile'])
+    instrListP = pd.read_csv(config['instruction']['practice']['instructionListFile'],
+                             error_bad_lines=False)
     instrListP = check_df_from_csv_file(df=instrListP)
     config['instruction']['practice']['list'] = instrListP
 
-    instrListE = pd.read_csv(config['instruction']['experiment']['instructionListFile'])
+    instrListE = pd.read_csv(config['instruction']['experiment']['instructionListFile'],
+                             error_bad_lines=False)
     instrListE = check_df_from_csv_file(df=instrListE)
     config['instruction']['experiment']['list'] = instrListE
 
@@ -1746,7 +1943,8 @@ def init_config(runtime,configDir):
         config['practice']['enable'] = False
 
     # If a trialListFile exists, use this
-    trListP = pd.read_csv(config['practice']['trialListFile'])
+    trListP = pd.read_csv(config['practice']['trialListFile'],
+                          error_bad_lines=False)
     trListP = check_df_from_csv_file(df=trListP)
     config['practice']['trialList'] = trListP
 
@@ -1759,7 +1957,8 @@ def init_config(runtime,configDir):
     else:
         config['experiment']['enable'] = False
 
-    trListE = pd.read_csv(config['experiment']['trialListFile'])
+    trListE = pd.read_csv(config['experiment']['trialListFile'],
+                          error_bad_lines=False)
     trListE = check_df_from_csv_file(df=trListE)
     config['experiment']['trialList'] = trListE
 
@@ -1849,31 +2048,20 @@ def init_config(runtime,configDir):
     return config
 def init_stimulus(window,stimType):
     """
-    <SUMMARY LINE>
 
-    <EXTENDED DESCRIPTION>
+    Initialize PsychoPy stimulus with default settings
 
     Parameters
     ----------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
+    window      : psychopy.visual.window.Window
+                PsychoPy window object, in which stimuli are presented
 
+    stimType    : str or unicode
+                stimulus type
     Returns
     -------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
-
-    Raises
-    ------
-    <EXCEPTIONS>
-
-    Usage
-    -----
-    <USAGE>
-
-    Example
-    -------
-    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
+    stimObject  : psychopy.visual.text.TextStim or psychopy.visual.text.ImageStim
+                PsychoPy stimulus object
     """
 
     stimDict = {'textstim': visual.TextStim(window),
@@ -1884,31 +2072,22 @@ def init_stimulus(window,stimType):
     return stimObject
 def present_instruction(config,type,*args):
     """
-    <SUMMARY LINE>
-
-    <EXTENDED DESCRIPTION>
+    Present instruction stimuli
 
     Parameters
     ----------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
+    config              : dict
+                        specifies StPy experiment properties
 
-    Returns
-    -------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
+    type                : str or unicode
+                        block type
 
-    Raises
-    ------
-    <EXCEPTIONS>
+    blockIx             : int (optional)
+                        block index
 
-    Usage
-    -----
-    <USAGE>
+    instructionStimIx   : int (optional)
+                        instruction stimulus index
 
-    Example
-    -------
-    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
     """
 
     # Process inputs
@@ -1939,16 +2118,16 @@ def present_instruction(config,type,*args):
                            'blockIx':   [blockIx]}
         ix              = instructionList.index.tolist()
         iRow            = instructionList[pattern.keys()].isin(pattern).all(1)
-        stimList        = instructionList.loc[iRow,'instructionIx'].astype(int).tolist()
+        stim_list        = instructionList.loc[iRow,'instructionIx'].astype(int).tolist()
     elif type == 'blockrepeat':
-        stimList        = [instructionStimIx]
+        stim_list        = [instructionStimIx]
     elif type == 'start' or type == 'end':
-        stimList        = range(len(instructionStim))
+        stim_list        = range(len(instructionStim))
 
     # Show instruction screens and monitor keyboard and response device inputs
     # -------------------------------------------------------------------------
 
-    while stimIx < len(stimList):
+    while stimIx < len(stim_list):
 
         # Clear buffer
         hub.clearEvents('all')
@@ -1957,7 +2136,7 @@ def present_instruction(config,type,*args):
         noKeyPressed = True
 
         # Show the instruction
-        instructionStim[stimList[stimIx]].draw()
+        instructionStim[stim_list[stimIx]].draw()
         window.flip()
 
         while noKeyPressed:
@@ -1982,118 +2161,123 @@ def present_instruction(config,type,*args):
                 elif toggleKeysPressed == toggleKeys[1]:
                     stimIx += 1
                     break
-
-def present_stimuli(window,stimList,u,f_on_off,log,timing):
+def present_stimuli(window, stim_list, u, f_on_off, log):
     """
-    <SUMMARY LINE>
-
-    <EXTENDED DESCRIPTION>
+    Presents stimuli comprising a trial (fixation, cue, s1, and s2)
 
     Parameters
     ----------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
+    window      : psychopy.visual.window.Window
+                PsychoPy window object, in which stimuli are presented
+
+    stim_list   : list
+                specifies a list of PsychoPy stimuli to present on this trial
+
+    u           : numpy.ndarray
+                stimulus-by-frame array specifying for each combination of
+                stimulus (row) and frame (column) whether or not the stimulus
+                should be displayed
+
+    f_on_off    : numpy.ndarray
+                stimulus-by-2 array specifying the frame indices of stimulus
+                onset (first column) and stimulus offset (second column)
+
+    log         : pandas.core.frame.DataFrame
+                trial log
 
     Returns
     -------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
+    log         : pandas.core.frame.DataFrame
+                trial log; present_stimuli fills in information about trial and
+                stimulus onsets and durations, as well as differences between
+                actual and planned onsets and durations
 
-    Raises
-    ------
-    <EXCEPTIONS>
-
-    Usage
-    -----
-    <USAGE>
-
-    Example
-    -------
-    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
     """
-
 
     # Define dynamic variables
     # -------------------------------------------------------------------------
-    nStim = len(stimList)
-    nFrame = np.size(u,1)
-    tFlip = [None] * (nFrame + 1)
+    n_stim  = len(stim_list)
+    n_frame = np.size(u,1)
+    t_flip  = [None] * (n_frame + 1)
 
     # Execute trial
     # =========================================================================
 
     # Draw stimuli, flip screen
-    for frameIx in range(nFrame):
+    for frame_ix in range(n_frame):
 
-        for stimIx in range(nStim -1):
+        for stim_ix in range(n_stim -1):
 
-            if u[stimIx,frameIx]:
-                stimList[stimIx].setAutoDraw(True)
+            if u[stim_ix,frame_ix]:
+                stim_list[stim_ix].setAutoDraw(True)
             else:
-                stimList[stimIx].setAutoDraw(False)
+                stim_list[stim_ix].setAutoDraw(False)
 
-        tFlip[frameIx] = window.flip()
+        t_flip [frame_ix] = window.flip()
 
     # Hide all trial stimuli and present ITI stimulus
-    [stimList[stimIx].setAutoDraw(False) for stimIx in range(nStim - 1)]
-    stimList[-1].setAutoDraw(True)
-    tFlip[-1] = window.flip()
+    [stim_list[stim_ix].setAutoDraw(False) for stim_ix in range(n_stim - 1)]
+    stim_list[-1].setAutoDraw(True)
+    t_flip [-1] = window.flip()
 
     # Timing
-    trialOns = tFlip[0]
-    trialOff = tFlip[-1]
-    trialDur = trialOff - trialOns
+    trial_ons = t_flip [0]
+    trial_off = t_flip [-1]
+    trial_dur = trial_off - trial_ons
 
     # Actual stimulus onset and duration times
-    stimDisplayed = [stim.name[0:stim.name.find('_')] for stim in stimList]
+    stim_displayed = [stim.name[0:stim.name.find('_')] for stim in stim_list]
 
     # Log
-    log.iloc[0]['trialOns'] = trialOns
-    log.iloc[0]['trialDur'] = trialDur
+    log.iloc[0]['trialOns'] = trial_ons
+    log.iloc[0]['trialDur'] = trial_dur
 
-    for ix in range(len(stimDisplayed) - 1):
-        fOn,fOff    = f_on_off[:,ix]
+    for ix in range(len(stim_displayed) - 1):
+        f_on,f_off      = f_on_off[:,ix]
+        ons             = t_flip [f_on] - trial_ons
+        dur             = t_flip [f_off] - t_flip [f_on]
+        ons_intended    = log.iloc[0][stim_displayed[ix]+'Ons']
+        dur_intended    = log.iloc[0][stim_displayed[ix]+'Dur']
+        ons_dt          = ons - ons_intended
+        dur_dt          = dur - dur_intended
 
-        ons         = tFlip[fOn] - trialOns
-        dur         = tFlip[fOff] - tFlip[fOn]
-        onsIntended = log.iloc[0][stimDisplayed[ix]+'Ons']
-        durIntended = log.iloc[0][stimDisplayed[ix]+'Dur']
-        onsDt       = ons - onsIntended
-        durDt       = dur - durIntended
-
-        log.iloc[0][stimDisplayed[ix]+'Ons'] = ons
-        log.iloc[0][stimDisplayed[ix]+'Dur'] = dur
-        log.iloc[0][stimDisplayed[ix]+'OnsDt'] = onsDt
-        log.iloc[0][stimDisplayed[ix]+'DurDt'] = durDt
+        log.iloc[0][stim_displayed[ix]+'Ons'] = ons
+        log.iloc[0][stim_displayed[ix]+'Dur'] = dur
+        log.iloc[0][stim_displayed[ix]+'OnsDt'] = ons_dt
+        log.iloc[0][stim_displayed[ix]+'DurDt'] = dur_dt
 
     return log
 def run_block(config,blockId,trialList,blockLog,trialOnsNextBlock):
     """
-    <SUMMARY LINE>
-
-    <EXTENDED DESCRIPTION>
+    Runs all trials comprising a block
 
     Parameters
     ----------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
+    config              : dict
+                        specifies StPy experiment properties
+
+    blockId             : str or unicode
+                        identifier of the block
+
+    trialList           : pandas.core.frame.DataFrame
+                        list of trials to present
+
+    blockLog            : pandas.core.frame.DataFrame
+                        log of trials comprising the present block
+
+    trialsOnsNextBlock  : float
+                        onset of the next block (in seconds, relative to last
+                        clock reset)
+
 
     Returns
     -------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
+    blockLog            : pandas.core.frame.DataFrame
+                        block-level performance log
 
-    Raises
-    ------
-    <EXCEPTIONS>
+    allCritMet          : bool
+                        whether or not all performance criteria have been met
 
-    Usage
-    -----
-    <USAGE>
-
-    Example
-    -------
-    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
     """
 
     # 1. Process inputs
@@ -2155,7 +2339,7 @@ def run_block(config,blockId,trialList,blockLog,trialOnsNextBlock):
         # ---------------------------------------------------------------------
         thisTrialLog.loc[trialListIx,sessColumns] = sessData
 
-        thisTrialLog, stimList, u, f_on_off, t_max = stim_to_frame_mat(config,trialList.ix[trialListIx],thisTrialLog)
+        thisTrialLog, stim_list, u, f_on_off, trial_dur = stim_to_frame_mat(config,trialList.ix[trialListIx],thisTrialLog)
 
         tTrialReady = config['clock'].getTime()
         print 'Trial %d ready to start: t = %f s, dt = %f ms' % (trialListIx, tTrialReady, 1000*(tTrialReady - trialOns))
@@ -2169,7 +2353,7 @@ def run_block(config,blockId,trialList,blockLog,trialOnsNextBlock):
                                     thisTrialLog,
                                     trialTiming,
                                     window,
-                                    stimList,
+                                    stim_list,
                                     u,
                                     f_on_off,
                                     rd,
@@ -2221,31 +2405,19 @@ def run_block(config,blockId,trialList,blockLog,trialOnsNextBlock):
     return blockLog, allCritMet
 def run_phase(config,phaseId,trialList):
     """
-    <SUMMARY LINE>
-
-    <EXTENDED DESCRIPTION>
+    Runs all trials comprising the practice or experimental phase
 
     Parameters
     ----------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
+    config      : dict
+                specifies StPy experiment properties
 
-    Returns
-    -------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
+    phaseId     : str or unicode
+                phase identifier: should be either 'practice' or 'experiment'
 
-    Raises
-    ------
-    <EXCEPTIONS>
+    trialList   : pandas.core.frame.DataFrame
+                list of trials to present
 
-    Usage
-    -----
-    <USAGE>
-
-    Example
-    -------
-    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
     """
 
     blockIxs        = trialList['blockIx'].unique()
@@ -2320,33 +2492,71 @@ def run_phase(config,phaseId,trialList):
                         config['clock'].reset(trialListBlock.iloc[0]['trialOns'])
             else:
                 break
-def run_trial(config,waitForTrigger,trialOns,hub,trialLog,trialTiming,window,stimList,u,f_on_off,rd,kb,trialStats,trialEvalData,feedbackDur,stimuli):
+def run_trial(config,waitForTrigger,trialOns,hub,trialLog,trialTiming,window,stim_list,u,f_on_off,rd,kb,trialStats,trialEvalData,feedbackDur,stimuli):
     """
-    <SUMMARY LINE>
-
-    <EXTENDED DESCRIPTION>
+    Runs a trial
 
     Parameters
     ----------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
+    config          : dict
+                    specifies StPy experiment properties
+
+    waitForTrigger  : bool
+                    whether or not trial onsent is contingent on trigger
+
+    trialOns        : int or float
+                    trial onset (in seconds from clock reset)
+
+    hub             : psychopy.iohub.client.ioHubConnection
+                    interface to the ioHub
+
+    trialLog        : pandas.core.frame.DataFrame
+                    empty trial log
+
+    trialTiming     : dict
+                    specifies timing properties, such as trial onset, trial
+                    duration, inter-trial interval duration, and refresh times
+
+    window          : psychopy.visual.window.Window
+                    PsychoPy window object, in which stimuli are presented
+
+    stim_list       : list
+                    list of PsychoPy stimuli
+
+    u               : numpy.ndarray
+                    stimulus-by-frame array specifying for each combination of
+                    stimulus (row) and frame (column) whether or not the
+                    stimulus should be displayed
+
+    f_on_off        : numpy.ndarray
+                    stimulus-by-2 array specifying the frame indices of
+                    stimulus onset (first column) and stimulus offset (second
+                    column)
+
+    rd              : dict
+                    specifies response device properties
+
+    kb              : dict
+                    specifies keyboard properties
+
+    trialStats      : dict
+                    specifies which descriptive statistics need to be computed
+
+    trialEvalData   : dict
+                    specifies all data necessary to evaluate trials
+
+    feedbackDur     : int or float
+                    duration of trial feedback (in seconds)
+
+    stimuli         : dict
+                    all stimuli used in the experiment
 
     Returns
     -------
-    <NAME> : <TYPE>
-        <DESCRIPTION>
+    trialLog        : pandas.core.frame.DataFrame
+                    trial log
 
-    Raises
-    ------
-    <EXCEPTIONS>
 
-    Usage
-    -----
-    <USAGE>
-
-    Example
-    -------
-    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
     """
 
     # Wait for external trigger, or trial onset, or both
@@ -2378,11 +2588,10 @@ def run_trial(config,waitForTrigger,trialOns,hub,trialLog,trialTiming,window,sti
     # Present stimuli
     # -------------------------------------------------------------------------
     trialLog = present_stimuli(window=window,
-                               stimList=stimList,
+                               stim_list=stim_list,
                                u=u,
                                f_on_off=f_on_off,
-                               log=trialLog,
-                               timing=trialTiming)
+                               log=trialLog)
 
     if __debug__:
         tStimPresented = config['clock'].getTime()
@@ -2486,48 +2695,48 @@ def set_soa(config,log):
     # Update soa experiment trial list
     for ix in range(nSoa):
         pass
-def time_to_frame(ons, dur, dt, t_max):
+def time_to_frame(ons, dur, dt, trial_dur):
     """
-    <SUMMARY LINE>
-
-    <EXTENDED DESCRIPTION>
+    Makes a stimulus-frame array based on stimulus onsets and durations
 
     Parameters
     ----------
-    ons     : numpy.ndarray
-            1D-array of stimulus onset(s)
+    ons         : numpy.ndarray
+                1D-array of stimulus onset(s)
 
-    dur     : numpy.ndarray
-            1D-array of stimulus duration(s)
+    dur         : numpy.ndarray
+                1D-array of stimulus duration(s)
 
-    dt      : numpy.ndarray
-            Time step
+    dt          : numpy.ndarray
+                time step (in seconds)
 
-    t_max   : numpy.ndarray
-            Maximum stimulus presentation time
+    trial_dur   : numpy.ndarray
+                trial duration (in seconds), based on onsets and durations of
+                the fixation, cue, s1, and s2 stimulus.
 
     Returns
     -------
-    u       : numpy.ndarray
-            <DESCRIPTION>
+    u           : numpy.ndarray
+                stimulus-by-frame array specifying for each combination of
+                stimulus (row) and frame (column) whether or not the stimulus
+                should be displayed
 
-    f_on_off: numpy.ndarray
-            <DESCRIPTION>
+    f_on_off    : numpy.ndarray
+                stimulus-by-2 array specifying the frame indices of stimulus
+                onset (first column) and stimulus offset (second column)
 
-    t       : numpy.ndarray
-            <DESCRIPTION>
+    t           : numpy.ndarray
+                array of frame onset times (in seconds, relative to trial
+                onset)
 
     Raises
     ------
-    <EXCEPTIONS>
+    AssertionError:
+        If 'ons' is not instance of class np.ndarray
+        If 'dur' is not instance of class np.ndarray
+        If 'dt' is not instance of class np.ndarray
+        If 'trial_dur' is not instance of class np.ndarray
 
-    Usage
-    -----
-    <USAGE>
-
-    Example
-    -------
-    <EXAMPLE THAT CAN IDEALLY BE COPY PASTED>
     """
 
     ###########################################################################
@@ -2545,7 +2754,7 @@ def time_to_frame(ons, dur, dt, t_max):
     assert isinstance(ons, np.ndarray), 'ons should be of type ndarray'
     assert isinstance(dur, np.ndarray), 'dur should be of type ndarray'
     assert isinstance(dt, np.ndarray), 'dt should be of type ndarray'
-    assert isinstance(t_max, np.ndarray), 't_max should be of type ndarray'
+    assert isinstance(trial_dur, np.ndarray), 'trial_dur should be of type ndarray'
 
     #TODO: assert that inputs are no unsized objects;
 
@@ -2555,7 +2764,7 @@ def time_to_frame(ons, dur, dt, t_max):
     n_stim = np.size(ons)
 
     # Number of frames
-    n_frame = int(np.ceil(t_max/dt))
+    n_frame = int(np.ceil(trial_dur/dt))
 
     # Array of frames
     f = range(0, n_frame, 1)
