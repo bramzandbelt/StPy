@@ -359,8 +359,8 @@ def compute_trial_statistics(trialStats,rd,log):
 
     if trialStats['rpt']:
         for key in rspKeys:
-            log.iloc[0]['rpt1_' + key] = rt1[key] - s2Ons
-            log.iloc[0]['rpt2_' + key] = rt2[key] - s2Ons
+            log.iloc[0]['rpt1_' + key] = log.iloc[0]['keyTime1_'+key] - s2Ons
+            log.iloc[0]['rpt2_' + key] = log.iloc[0]['keyTime2_'+key] - s2Ons
 
         rpt1Cols = [col for col in log.columns if col.startswith('rpt1_')]
         rpt2Cols = [col for col in log.columns if col.startswith('rpt2_')]
