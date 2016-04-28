@@ -8,9 +8,9 @@
     !!python/unicode device_number: 0
     !!python/unicode name: !!python/unicode display
     !!python/unicode override_using_psycho_settings: false
-    !!python/unicode physical_dimensions: {!!python/unicode height: 281, !!python/unicode unit_type: !!python/unicode mm,
-      !!python/unicode width: 500}
-    !!python/unicode psychopy_monitor_name: !!python/unicode MacBookRetinaDisplay
+    !!python/unicode physical_dimensions: {!!python/unicode height: 296, !!python/unicode unit_type: !!python/unicode mm,
+      !!python/unicode width: 527}
+    !!python/unicode psychopy_monitor_name: !!python/unicode DELL_P2414H
     !!python/unicode reporting_unit_type: !!python/unicode pix
 - !!python/unicode Keyboard:
     !!python/unicode event_buffer_length: 256
