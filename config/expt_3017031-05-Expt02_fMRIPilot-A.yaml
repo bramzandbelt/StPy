@@ -1,0 +1,1001 @@
+###############################################################################
+# 1. STUDY SETTINGS
+###############################################################################
+
+# title: string
+#
+# A short but non-cryptic name of the experiment.
+#
+title: 'Neural mechanisms of action-selective and stimulus-selective stopping'
+
+# code: string
+#
+# A short, usually cryptic, code for the experiment. An experiment code is
+# typically required when using the ioHub DataStore. At this time, StPy does
+# not us the ioHub DataStorem, hence no code is required.
+#
+# Here, the code is equal to the DCCN project identifier
+#
+code: '3017031-05-Expt02_fMRIPilot'
+
+# ethics_protocol_id: string
+#
+# The identifier of the protocol of the ethics committee that approved the
+# experiment. This ID is saved in the log files.
+#
+ethics_protocol_id: 'NL45659.091.14'
+
+# version: string
+#
+# The version of the experiment being run.
+#
+#       Each version on an experiment should have it's own experiment folder
+#       that has the experiment source and configuaration.
+#
+#   Consider here referring to version A and B (randomization)
+#
+version: 'A'
+
+# description: string
+#
+# Here you can provide more information about the study.
+#
+description: Here goes some description
+
+# display_experiment_dialog: boolean
+#
+# If True, a read-only dialog will be displayed when the experiment is run. The
+# dialog shows the key-value pairs above. This allows the experimenter to check
+# that they started the right file.
+#
+display_experiment_dialog: True
+
+###############################################################################
+# 2. SESSION SETTINGS
+###############################################################################
+
+# session_variable_order: list of strings
+#
+# This setting accepts a list, each element of which is a session variable key
+# (either built-in or custom). The order the keys are provided in the list will
+# be the order that each appears in the Session Input Dialog.
+#
+session_variable_order: [name, code, experimenterId, comments, groupIx, subjectIx,sessionIx]
+
+# session_defaults: dictionary
+#
+# This parameter is defined as a dictionary containing the experiment session
+# metadata and user defined custom parameters.
+#
+session_defaults:
+
+    # name: string
+    #
+    # This parameter allows the entry of a short name for the session.
+    #
+    # Here, the name reflects the purpose of data collection, for example
+    # - pilot
+    # - practice (practice only session)
+    # - experiment (this may contain a practice session followed by an experiment session)
+    #
+    name: <purpose of session (e.g. pilot, practice, experiment)>
+
+    # code: string
+    #
+    # A short code for the experiment session.
+    #
+    # Here, the code reflects site of data collection
+    #
+    # - institute abbreviation
+    # - computer
+    # - other information (e.g. room where computer)
+    #
+    # For example:
+    # DCCN_Lab-pre049-Cubicle1
+    #
+    code: <enter location>
+
+    # experimenterId: string
+    #
+    # An identifier of the experimenter running the experiment.
+    #
+    experimenterId: <enter experimenter initials>
+
+    # comments: string
+    #
+    # This parameter can be used to give any information the experimenter
+    # thinks may be important to note about the session about to be run.
+    #
+    # Here, the comments contain instructions on what to double check.
+    #
+    comments: Make sure that you enter the correct and unique subject/session ID!
+
+    # user_variables: dictionary
+    #
+    # This parameter is defined as a dictionary and contains custom session
+    # data entry fields to be displayed in the Session Input Dialog. If no
+    # extra session variables are needed, this section can be removed. The
+    # default is no extra user defined variable.
+    # To create user defines variables, add one line for each variable wanted
+    # to the user_variables parameter section. The key of each line will be
+    # shown and the label for the input. The value of each line specifies the
+    # default value for string field, and the possible values to be shown for a  in the dialog.
+    # list field, which is displayed as a dropdown list. For list fileds, the
+    # first element of the list is the default.  Fields that have a boolean
+    # default are displayed as a checkbox.
+    #
+    # Here, the dictionary as the following keys:
+    # - groupIx: int
+    #   The index of the group the subject belongs to.
+    # - subjectIx: int
+    #   The index of the subject within the group
+    # - sessionIx: int
+    #   The index of the current session.
+    # - practice: boolean
+    #   Whether or not the practice blocks should be run.
+    # - experiment: boolean
+    #   Whether or not the experimental blocks should be run.
+    #
+    user_variables:
+
+        groupIx: 0
+        subjectIx: 0
+        sessionIx: 0
+        practice: False
+        experiment: False
+
+# display_session_dialog: boolean
+#
+# If True, an input dialog is shown each time the experiment starts allowing
+# the experimenter to enter data for the session_default parameters and any
+# user_variables defined.
+#
+display_session_dialog: True
+
+###############################################################################
+# 3. IOHUB SETTINGS
+###############################################################################
+
+# process_affinity: list
+#
+# This parameter specifies the processing units / cpu's that the PsychoPy
+# Process should be allowed to run on. Not supported on OSX. An empty list
+# indicates that the process should be able to run on any processing unit of
+# the computer.
+#
+process_affinity: []                # Default
+
+# remaining_processes_affinity: list
+#
+# Lists the processing units / cpu's that all other processes running on the
+# computer (other than the ioHub Process) should be allowed to run on. An empty
+# list indicates that the process should be able to run on any processing unit
+# of the computer. Not supported on OSX.
+#
+remaining_processes_affinity: []    # Default
+
+# event_buffer_length: int
+#
+# The maximum number of events that can be in the PsychoPy Process ioHub event
+# cache. This is used when iohub.wait() is called and new events are received
+# from the ioHub process.
+#
+event_buffer_length: 1024           # Default
+
+# iohub: dictionary
+#
+# This dictionary specifies settings for the ioHub Process itself.
+#
+ioHub:
+    # enable: boolean
+    #
+    # Do you want the ioHub process to run ?  True == Yes
+    # False == why are you creating an ioHub configuration file then? ;)
+    #
+    # Currently, the task won't run if this is set to false.
+    #
+    enable: True                    # Default
+
+    # process_affinity: Specifies the processing units / cpu's that the
+    #       ioHub Process should be allowed to run on.
+    #       An empty list indicates that the process should be able
+    #       to run on any processing unit of the computer.
+    #       Not supported on OSX.
+    #
+    process_affinity: []            # Default
+
+
+    # config: The name of the ioHub config file, specifying device
+    #       settings, etc
+    #
+    config: iohub_config.yaml       # Default
+
+
+
+###############################################################################
+# INSTRUCTION
+###############################################################################
+
+# instruction: dictionary
+#
+# This dictionary contains information about the instructions to be presented
+# at different phases of the experiment.
+#
+instruction:
+    # start: dictionary
+    #
+    # This dictionary contains information about the instruction stimuli to be
+    # presented right after run_stpy.py is launched.
+    #
+    start:
+
+        # type: string
+        #
+        # The PsychoPy stimulus class of the instruction stimulus. Currently,
+        # only ImageStim is supported.
+        #
+        type: ImageStim
+
+        # name: identifier of the set of instructions
+        #
+        # Currently, this key-value pair is not used by the code.
+        #
+        name: generalInstruction
+
+        # content: list
+        #
+        # This list specifies the instruction stimuli files and the order in
+        # which they are shown. The response keys are used to move from one
+        # stimulus to the next.
+        #
+        content:
+           - data/3017031-05-Expt02_fMRIPilot/instructions/instruction_start.jpeg
+
+        # ori: int
+        #
+        # The orientation of the stimulus (in degrees).
+        #
+        ori: 0
+
+        # pos: int
+        #
+        # The position of the center of the stimulus in the stimulus. The value
+        # should be an x,y-pair.
+        #
+        pos: [0,0]
+
+    # practice: dictionary
+    #
+    # This dictionary contains information about the instruction stimuli to be
+    # presented during the practice phase of the experiment.
+    #
+    practice:
+
+        # instructionListFile: string
+        #
+        # Path to the comma separated value (csv) file containing the mapping
+        # between the index of the session, block, and instruction stimuli to
+        # be shown (see README file).
+        #
+        instructionListFile: data/3017031-05-Expt02_fMRIPilot/csvfiles/instruction_list_practice.csv
+
+        # type: string
+        #
+        # The PsychoPy stimulus class of the instruction stimulus. Currently,
+        # only ImageStim is supported.
+        #
+        type: ImageStim
+
+        # name: identifier of the set of instructions
+        #
+        # Currently, this key-value pair is not used by the code.
+        #
+        name: practiceInstruction
+
+        # content: list
+        #
+        # This list specifies the instruction stimuli files and the order in
+        # which they are shown. The response keys are used to move from one
+        # stimulus to the next.
+        #
+        content:
+            - data/3017031-05-Expt02_fMRIPilot/instructions/instruction_practice_general.jpeg
+            - data/3017031-05-Expt02_fMRIPilot/instructions/instruction_A_title.jpeg
+            - data/3017031-05-Expt02_fMRIPilot/instructions/instruction_A_practice01_00.jpeg
+            - data/3017031-05-Expt02_fMRIPilot/instructions/instruction_A_practice01_01.jpeg
+            - data/3017031-05-Expt02_fMRIPilot/instructions/instruction_A_practice01_02.jpeg
+            - data/3017031-05-Expt02_fMRIPilot/instructions/instruction_A_practice02_00.jpeg
+            - data/3017031-05-Expt02_fMRIPilot/instructions/instruction_A_practice02_01.jpeg
+            - data/3017031-05-Expt02_fMRIPilot/instructions/instruction_A_practice02_02.jpeg
+            - data/3017031-05-Expt02_fMRIPilot/instructions/instruction_A_practice02_03.jpeg
+            - data/3017031-05-Expt02_fMRIPilot/instructions/instruction_A_practice02_04.jpeg
+            - data/3017031-05-Expt02_fMRIPilot/instructions/instruction_A_practice02_05.jpeg
+            - data/3017031-05-Expt02_fMRIPilot/instructions/instruction_A_practice02_06.jpeg
+            - data/3017031-05-Expt02_fMRIPilot/instructions/instruction_A_practice02_07.jpeg
+            - data/3017031-05-Expt02_fMRIPilot/instructions/instruction_A_practice03_00.jpeg
+
+        # ori: int
+        #
+        # The orientation of the stimulus (in degrees).
+        #
+        ori: 0
+
+        # pos: int
+        #
+        # The position of the center of the stimulus in the stimulus. The value
+        # should be an x,y-pair.
+        #
+        pos: [0,0]
+
+    # experiment: dictionary
+    #
+    # This dictionary contains information about the instruction stimuli to be
+    # presented before the experiment begins.
+    #
+    experiment:
+        instructionListFile: data/3017031-05-Expt02_fMRIPilot/csvfiles/instruction_list_experiment.csv
+
+        # type: string
+        #
+        # The PsychoPy stimulus class of the instruction stimulus. Currently,
+        # only ImageStim is supported.
+        #
+        type: ImageStim
+
+        # name: identifier of the set of instructions
+        #
+        # Currently, this key-value pair is not used by the code.
+        #
+        name: experimentInstruction
+
+        # content: list
+        #
+        # This list specifies the instruction stimuli files and the order in
+        # which they are shown. The response keys are used to move from one
+        # stimulus to the next.
+        #
+        content:
+            - data/3017031-05-Expt02_fMRIPilot/instructions/instruction_A_experiment_00.jpeg
+
+        # ori: int
+        #
+        # The orientation of the stimulus (in degrees).
+        #
+        ori: 0
+
+        # pos: int
+        #
+        # The position of the center of the stimulus in the stimulus. The value
+        # should be an x,y-pair.
+        #
+        pos: [0,0]
+
+    # blockrepeat: dictionary
+    #
+    # This dictionary contains information about the instruction stimuli to be
+    # presented when the subject does not meet task performance requirements
+    # (see below) and a block has to be repeated.
+    #
+    blockrepeat:
+
+        # type: string
+        #
+        # The PsychoPy stimulus class of the instruction stimulus. Currently,
+        # only ImageStim is supported.
+        #
+        type: ImageStim
+
+        # name: identifier of the set of instructions
+        #
+        # Currently, this key-value pair is not used by the code.
+        #
+        name: blockRepeat
+
+        # content: list
+        #
+        # For blockrepeat, the content list must contain two files:
+        # - the first file the instruction screen that tells the subject that
+        #   the block will be repeated.
+        # - the second file should be the instruction screen that tells the
+        #   subject that the experiment will be terminated because performance
+        #   fails criteria.
+        content:
+            - data/3017031-05-Expt02_fMRIPilot/instructions/instruction_give_it_another_try.jpeg
+            - data/3017031-05-Expt02_fMRIPilot/instructions/instruction_terminate_experiment.jpeg
+
+        # ori: int
+        #
+        # The orientation of the stimulus (in degrees).
+        #
+        ori: 0
+
+        # pos: int
+        #
+        # The position of the center of the stimulus in the stimulus. The value
+        # should be an x,y-pair.
+        #
+        pos: [0,0]
+
+    # end: dictionary
+    #
+    # This dictionary contains information about the instruction stimuli to be
+    # presented when the experiment is finished.
+    #
+    end:
+        # type: string
+        #
+        # The PsychoPy stimulus class of the instruction stimulus. Currently,
+        # only ImageStim is supported.
+        #
+        type: ImageStim
+
+        # name: identifier of the set of instructions
+        #
+        # Currently, this key-value pair is not used by the code.
+        #
+        name: thankYouMessage
+
+        # content: list
+        #
+        # This list specifies the instruction stimuli and the order in which
+        # they are shown. The response keys are used to move from one stimulus
+        # to the next.
+        #
+        content:
+            - data/3017031-05-Expt02_fMRIPilot/instructions/instruction_thank_you.jpeg
+
+        # ori: int
+        #
+        # The orientation of the stimulus (in degrees).
+        #
+        ori: 0
+
+        # pos: int
+        #
+        # The position of the center of the stimulus in the stimulus. The value
+        # should be an x,y-pair.
+        #
+        pos: [0,0]
+
+###############################################################################
+# STIMULUS CONFIGURATION
+###############################################################################
+
+# stimConfig: dictionary
+#
+# This dictionary specifies the configuration of the stimuli in the experiment.
+# The following types of stimuli can be specified:
+# - cue:        cue stimulus (optional)
+# - fix:        fixation stimulus (optional)
+# - s1:         primary (go) stimulus
+# - s2:         secondary stimulus (signal)
+# - feedback:   trial feedback stimulus
+# - iti:        stimulus displayed during the intertrial interval
+#
+stimConfig:
+
+    # cue: dictionary
+    #
+    # This dictionary specifies the configuration of the cue stimulus.
+    # Information on stimulus onset and duration are specified in a comma-
+    # separated value (csf) file, see below.
+    #
+    cue:
+
+        # type: string
+        #
+        # The PsychoPy stimulus class of the instruction stimulus. Currently,
+        # only TextStim and ImageStim is supported.
+        #
+        type:
+
+        # name: identifier of the stimulus
+        #
+        # This key-value pair is not used by the code.
+        #
+        name: cue
+
+        # content: list
+        #
+        # This list of strings contains the stimuli (if type equals TextStim)
+        # or filenames of the stimuli (if type equals ImageStim). The indices
+        # in the cueIx column of the trialList files correspond to the indices
+        # of the content list.
+        # N.B. Unicode characters can be used as TextStim stimuli, but they
+        # should be between double-quotes (e.g. ["\u2666","\u2665"]).
+        #
+        content:
+        color:
+        font:
+        height:
+        ori:
+        pos:
+
+    # fix: dictionary
+    #
+    # This dictionary specifies the configuration of the fixation stimulus.
+    # Information on stimulus onset and duration are specified in a comma-
+    # separated value (csf) file, see below.
+    fix:
+
+        # type: string
+        #
+        # The PsychoPy stimulus class of the instruction stimulus. Currently,
+        # only TextStim and ImageStim is supported.
+        #
+        type: TextStim
+
+        # name: identifier of the stimulus
+        #
+        # This key-value pair is not used by the code.
+        #
+        name: fix
+
+        # content: list
+        #
+        # This list of strings contains the stimuli (if type equals TextStim)
+        # or filenames of the stimuli (if type equals ImageStim). The indices
+        # in the cueIx column of the trialList files correspond to the indices
+        # of the content list.
+        # N.B. Unicode characters can be used as TextStim stimuli, but they
+        # should be between double-quotes (e.g. ["\u2666","\u2665"]).
+        #
+        content: [+]
+        color: [255,255,255]
+        opacity: 1
+        font: Arial
+        height: 2
+        ori: 0
+        pos: [0,0]
+
+    # s1: dictionary
+    #
+    # This dictionary specifies the configuration of the primary (go) stimulus.
+    # Information on stimulus onset and duration are specified in a comma-
+    # separated value (csv) file, see below.
+    s1:
+
+        # type: string
+        #
+        # The PsychoPy stimulus class of the instruction stimulus. Currently,
+        # only TextStim and ImageStim is supported.
+        #
+        type: TextStim
+
+        # name: list
+        #
+        # This list of strings is used to provide feedback on performance at
+        # the end of the block. The length of the list should correspond to the
+        # length of the list for the content parameter.
+        #
+        name: [middle finger,index finger]
+
+        # content: list
+        #
+        # This list of strings contains the stimuli (if type equals TextStim)
+        # or filenames of the stimuli (if type equals ImageStim). The indices
+        # in the cueIx column of the trialList files correspond to the indices
+        # of the content list.
+        # N.B. Unicode characters can be used as TextStim stimuli, but they
+        # should be between double-quotes (e.g. ["\u2666","\u2665"]).
+        #
+        content: [a,b]
+        font: PJ Hiragana
+        color: [255,255,255]
+        opacity: 1
+        fontFile: ['data/3017031-05-Expt02_fMRIPilot/miscellaneous/pj-hiragana.ttf']
+        height: 6
+        ori: 0
+        pos: [0,0]
+
+    # s2: dictionary
+    #
+    # This dictionary specifies the configuration of the secondary stimulus
+    # (signal). Information on stimulus onset and duration are specified in a
+    # comma-separated value (csf) file, see below.
+    #
+    s2:
+
+        # type: string
+        #
+        # The PsychoPy stimulus class of the instruction stimulus. Currently,
+        # only TextStim and ImageStim is supported.
+        #
+        type: TextStim
+        name: [stop left,stop right,stop both,ignore]
+
+        # content: list
+        #
+        # This list of strings contains the stimuli (if type equals TextStim)
+        # or filenames of the stimuli (if type equals ImageStim). The indices
+        # in the cueIx column of the trialList files correspond to the indices
+        # of the content list.
+        # N.B. Unicode characters can be used as TextStim stimuli, but they
+        # should be between double-quotes (e.g. ["\u2666","\u2665"]).
+        #
+        content: ["\u2666","\u2665","\u2660","\u2663"]
+        color: [[255,116,0],[0,255,255],[255,255,0],[169,13,255]]
+        opacity: 0.8
+        font: Arial
+        height: 3
+        ori: 0
+        pos: [0,0]
+
+    # feedback: dictionary
+    #
+    # This dictionary specifies the configuration of the feedback stimulus
+    # (signal). Information on stimulus onset and duration are specified in a
+    # below. Stimulus content is currently determined through a comma-separated
+    # value (csv) file, see below.
+    #
+    feedback:
+
+        # type: string
+        #
+        # The PsychoPy stimulus class of the instruction stimulus. Currently,
+        # only TextStim and ImageStim is supported.
+        #
+        type: TextStim
+
+        # name: identifier of the stimulus
+        #
+        # This key-value pair is not used by the code.
+        #
+        name: feedback
+
+        content: ' '
+        color: [255,255,255]
+        opacity: 1
+        font: Arial
+        height: 0.75
+        ori: 0
+        pos: [0,0]
+
+    # iti: dictionary
+    #
+    # This dictionary specifies the configuration of the intertrial stimulus.
+    # Information on stimulus onset and duration are specified through a comma-
+    # separated value (csv) file, see below.
+    #
+    iti:
+
+        # type: string
+        #
+        # The PsychoPy stimulus class of the instruction stimulus. Currently,
+        # only TextStim and ImageStim is supported.
+        #
+        type: TextStim
+
+        # name: identifier of the stimulus
+        #
+        # This key-value pair is not used by the code.
+        #
+        name: iti
+        content: ' '
+        color: [255,255,255]
+        opacity: 1
+        font: Arial
+        height: 2
+        ori: 0
+        pos: [0,0]
+
+###############################################################################
+# RESPONSES
+###############################################################################
+
+# Response key settings
+#
+
+responses:
+
+    # responseKeysPerClass: dictionary
+    #
+    # This dictionary contains key codes of the buttons, separately for each
+    # response device.
+    #
+    #
+# If the task contains two responses (e.g. 'f', and 'h'), and each response
+# consists of a single button press, then the input would be ['f','h'] If  the
+# task contains two responses, and each response requires that two buttons are
+# pressed (e.g. 'f' and 'h' for one stimulus and 'v' and 'b' for another), then
+# the value would look like this:
+
+    #
+
+
+#    The keys with which the subjects responds, separately for each response
+    # device class.
+    #
+    # If a response consists of multiple key presses, this is encoded as a list
+    # within a list. For example:
+    #
+    # [[a,b],[c,d]]
+    #
+    # This means that one response is associated with simultaneous key presses
+    # a and b, the other with key presses c and d.
+    #
+
+    responseKeysPerClass:
+        Keyboard: [[f,h],[v,b]]
+        Serial:   [[f,b],[e,a]]
+        fORP:     [[f,b],[e,a]]
+    # abortKeys: list
+    #
+    # They keys with which the experiment can be interrupted and terminated. These
+    #                 interrupted.
+    abortKeys: [escape,q]
+
+    # toggleKeys
+    #
+    # Keyboard keys to move backward and forward between instruction screens.
+    # This is useful if the participant accidently pressed a button, or when
+    # the partipant forgets to press a button.
+    #
+    toggleKeys: [left,right]
+    # pauseKeys:
+    # The keyboard keys with which the experiment can be paused temporarily.
+    #
+    # This functionality is not yet implemented
+    pauseKeys: [p]
+
+###############################################################################
+# RANDOMIZATION
+###############################################################################
+
+randomize:
+    practice:
+        blocks: False
+        trials: False
+    experiment:
+        blocks: False
+        trials: False
+
+###############################################################################
+# PRACTICE
+###############################################################################
+
+practice:
+    # trialListFile
+    #
+    # Path to the .csv-file containing the trial list for the practice blocks
+    trialListFile: data/3017031-05-Expt02_fMRIPilot/csvfiles/trialList_practice_taskVersionA.csv
+    randomizeBlocks: False
+    randomizeTrials: False
+
+###############################################################################
+# EXPERIMENT
+###############################################################################
+
+experiment:
+    # trialListFile
+    #
+    # Path to the .csv-file containing the trial list for the experimental
+    # blocks
+    trialListFile: data/3017031-05-Expt02_fMRIPilot/csvfiles/trialList_experiment.csv
+    randomizeBlocks: False
+    randomizeTrials: False
+
+###############################################################################
+# FUNCTIONAL MRI
+###############################################################################
+
+mritrigger:
+  enable: False
+  mode:
+  TR: 2.00
+  volumes: 100
+  sync: 's'
+  skip: 0
+  sound: False
+
+###############################################################################
+# STATISTICS
+###############################################################################
+# Details which statistics need to be computed
+#
+#
+
+statistics:
+    trial:
+        # rt      Response time - interval between s1 onset and response
+        rt: True
+        # rtDiff  Response time difference. How the difference is computed
+        #         should follow logically from the list of rspKeys. E.g.
+        #         difference between sets of response keys:
+        #
+        #         rspKeys = [{'f','h'},{'v','b'}]
+        rtDiff: True
+
+        # rpt     Raw processing time - interval between s2 onset and response
+        #         See Salinas & Stanford (2013) J Neurosci
+        rpt: True
+    block:
+    practice_block:
+
+        # soa     Stimulus-onset asynchrony can be computed based on practice
+        #         block performance. We will use the same implementation as
+        #         Logan et al. (2014) Psych Rev.
+        soa: True
+
+###############################################################################
+# EVALUATION
+###############################################################################
+
+# Details how trials (and blocks?) are evaluated
+#
+# Trials:
+# - choice:       correct, error, omission
+# - inhibition:   correct, error
+# - RT:           correct, too slow, too fast
+#
+# Block:
+# -
+#
+# practiceBlock:
+# Bounds
+# - choice accuracy: [0.9, 1.0]
+# - median RT (s): [0, 0.80]
+# - absolute RT difference: [0,50]
+
+evaluation:
+    trial:
+        evalDataFile:
+            Keyboard: data/3017031-05-Expt02_fMRIPilot/csvfiles/trialEvalData_Keyboard.csv
+            Serial: data/3017031-05-Expt02_fMRIPilot/csvfiles/trialEvalData_Serial.csv
+            fORP: data/3017031-05-Expt02_fMRIPilot/csvfiles/trialEvalData_FORP.csv
+    block:
+
+###############################################################################
+# FEEDBACK
+###############################################################################
+#
+#
+#
+#
+#
+# feedback: dict
+#   trial: dict
+#       duration: float
+#       features: dict
+#           accuracy: boolean
+#           rt: boolean
+#           rtDiff: boolean
+#           nTrialCompleted: boolean
+#           nTrialLeft: boolean
+#   block: dict
+#       duration: float
+#
+#       features: dict
+
+
+feedback:
+    trial:
+        # duration: float
+        #
+        # Duration (in seconds) trial feedback is shown onscreen
+        duration: 0.5
+        features:
+            accuracy: False
+            rt: False
+            rtDiff: False
+            nTrialCompleted: False
+            nTrialLeft: False
+    block:
+        #
+        #
+        # Duration can contain be a value or two-item list
+        # - if one value: then duration of feedback is fixed, and the experiment continues when this duration is over
+        # - if two values, then duration of feedback is in between min (1st element) and max (2nd element) and experiment continues when subject presses a button or maximum duration has passed
+        #
+        #
+        duration: 10
+        features:
+            s1Accuracy:
+                enable: True
+                criterion: [85,100]
+                feedbackPos: 'Well done!'
+                feedbackNeg: 'Remember to be as accurate as possible'
+            s2Accuracy:
+                enable: True
+                criterion: [[20,100],[20,100],[20,100],[80,100]]
+                feedbackPos: ['Well done!','Well done!','Well done!','Well done!']
+                feedbackNeg: ["Remember to stop left when you see \u2666","Remember to stop right when you see \u2665","Remember to stop left & right when you see \u2660","Remember to respond when you see \u2663"]
+            s1MeanRt:
+                enable: True
+                criterion: [0, 650]
+                feedbackPos: 'Well done!'
+                feedbackNeg: 'Remember to be as fast as possible'
+            s1MeanRtDiff:
+                enable: True
+                criterion: [0,50]
+                feedbackPos: 'Well done!'
+                feedbackNeg: 'Remember to make synchronous responses'
+
+###############################################################################
+# PERFORMANCE REQUIREMENTS
+###############################################################################
+
+# performanceRequirements: dict
+#
+# This dictionary specifies
+#
+# It contains two keys:
+# experiment    -
+# practice      -
+#
+# forceRepeat: boolean
+# True    -
+# False   -
+
+# maxNIter: int
+# Maximum number of times a block is repeated before the experiment terminates. This only has effect if forceRepeat is set to True.
+performanceRequirements:
+    experiment:
+        forceRepeat: False
+        maxNIter: 5
+    practice:
+        forceRepeat: True
+        maxNIter: 5
+
+###############################################################################
+# LOG
+###############################################################################
+# log: dict
+#
+# This dictionary specifies all aspects that need to be logged when the task is
+# run.
+log:
+
+    # dir: string
+    #
+    # This parameter contains the directory where the experimental log files
+    # will be written (task performance, runtime performance).
+    # If nothing specified, the log files will be written in a directory
+    #
+    #
+    dir: 
+
+
+    # runtime: dict
+    #
+    # Dictionary specifying whether runtime configuration should be written to
+    # disk.
+    runtime:
+
+        # enable: boolean
+        #
+        # True    - this will check your configuration at runtime (using
+        # psychopy.info.RunTimeInfo) and write the output to a txt file in the log
+        # directory
+        # False   - do not perform configuration check
+        enable: True
+
+    # performance: dict
+    #
+    # Dictionary specifying what aspects of task performance should be written
+    # to disk.
+    performance:
+
+        # trial: dict
+        #
+        # Dictionary specifying whether trial level task performance should be
+        # written to disk.
+        trial:
+
+            # enable: boolean
+            # True    - write trial level task performance a .txt file in the
+            #           log directory.
+            # False   - do not write trial level task performance to disk
+            enable: True
+
+        # block: dict
+        #
+        # Dictionary specifying whether block level task performance should be
+        # written to disk.
+        block:
+
+            # enable: boolean
+            # True    - write block level task performance a .txt file in the
+            #           log directory.
+            # False   - do not write block level task performance to disk
+            enable: True
