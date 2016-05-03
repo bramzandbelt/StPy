@@ -138,6 +138,7 @@ def collect_response(rd,kb, *args, **kwargs):
     keyCount = collect_response(rd,kb)
 
     """
+    triggered = None
     otherKeysPressed = None
     otherKeys = None
     log = None
@@ -214,6 +215,29 @@ def collect_response(rd,kb, *args, **kwargs):
                 if any([re.findall(key,ev._asdict()['key']) for key in otherKeys]):
                     otherKeysPressed = ev._asdict()['key']
                     return keyCount, otherKeysPressed
+
+    # Check if 'td' is a keyword argument and if a trigger is received
+    # -------------------------------------------------------------------------
+    if 'td' in kwargs:
+
+        td              = kwargs.get('td')
+        triggerKeys     = td['settings']['triggerKeys']
+        tKeyKey         = td['settings']['keyKey']
+        tTimeKey        = td['settings']['timeKey']
+
+        tdEvents        = td['client'].getEvents()
+
+        for tev in tdEvents:
+            tevKeys = tev._asdict()[tKeyKey]
+            tevTime = tev._asdict()[tTimeKey]
+
+            print 'Trigger received: %s at time %f' % (tevKeys, tevTime)
+
+            if any([re.findall(key,tev._asdict()['key']) for key in triggerKeys]):
+                triggered = tev._asdict()['key']
+                return triggered
+
+        return triggered
 
     # For each key, only response times of first two events are stored
     if isinstance(log,pd.DataFrame):
@@ -1805,7 +1829,8 @@ def init_config(runtime,modDir):
     config['apparatus'] = {'hub':       hub,
                            'display':   dict(),
                            'kb':        dict(),
-                           'rd':        dict()}
+                           'rd':        dict(),
+                           'td':        dict()}
 
     config['apparatus']['display']['client'] = hub.getDevice('display')
     config['apparatus']['kb']['client'] = hub.getDevice('keyboard')
@@ -1814,6 +1839,11 @@ def init_config(runtime,modDir):
         config['apparatus']['rd']['client'] = hub.getDevice('keyboard')
     else:
         config['apparatus']['rd']['client'] = hub.getDevice('responsedevice')
+
+    if config['mritrigger']['enable']:
+        config['apparatus']['td']['client'] = hub.getDevice('trigger')
+    else:
+        config['apparatus']['td']['client'] = None
 
     # Keyboard settings
     # -------------------------------------------------------------------------
@@ -1842,6 +1872,26 @@ def init_config(runtime,modDir):
     # Enable event reporting and clear all recorded events
     rd.enableEventReporting()
     rd.clearEvents()
+
+    # Trigger device settings
+    # -------------------------------------------------------------------------
+    if config['mritrigger']['enable']:
+        td = config['apparatus']['td']['client']
+        tdClass = td.getIOHubDeviceClass()
+        config['apparatus']['td']['settings'] = {'class': tdClass,
+                                                 'triggerKeys': config['mritrigger']['sync'],
+                                                 'keyKey': keyKey[tdClass],
+                                                 'timeKey': timeKey[tdClass]}
+
+        # Enable event reporting and clear all recorded events
+
+        td.enableEventReporting()
+        td.clearEvents()
+    else:
+        config['apparatus']['td']['settings'] =  {'class': None,
+                                                 'triggerKeys': None,
+                                                 'keyKey': None,
+                                                 'timeKey': None}
 
     ###########################################################################
     # WINDOW
@@ -2289,6 +2339,7 @@ def run_block(config,blockId,trialList,blockLog,trialOnsNextBlock):
     hub             = config['apparatus']['hub']
     rd              = config['apparatus']['rd']
     kb              = config['apparatus']['kb']
+    td              = config['apparatus']['td']
     trialStats      = config['statistics']['trial']
 
     trialEvalData   = config['evaluation']['trial']
@@ -2358,6 +2409,7 @@ def run_block(config,blockId,trialList,blockLog,trialOnsNextBlock):
                                     f_on_off,
                                     rd,
                                     kb,
+                                    td,
                                     trialStats,
                                     trialEvalData,
                                     feedbackDur,
@@ -2492,7 +2544,7 @@ def run_phase(config,phaseId,trialList):
                         config['clock'].reset(trialListBlock.iloc[0]['trialOns'])
             else:
                 break
-def run_trial(config,waitForTrigger,trialOns,hub,trialLog,trialTiming,window,stim_list,u,f_on_off,rd,kb,trialStats,trialEvalData,feedbackDur,stimuli):
+def run_trial(config,waitForTrigger,trialOns,hub,trialLog,trialTiming,window,stim_list,u,f_on_off,rd,kb,td,trialStats,trialEvalData,feedbackDur,stimuli):
     """
     Runs a trial
 
@@ -2539,6 +2591,9 @@ def run_trial(config,waitForTrigger,trialOns,hub,trialLog,trialTiming,window,sti
     kb              : dict
                     specifies keyboard properties
 
+    td              : dict
+                    specifies trigger device properties
+
     trialStats      : dict
                     specifies which descriptive statistics need to be computed
 
@@ -2564,9 +2619,9 @@ def run_trial(config,waitForTrigger,trialOns,hub,trialLog,trialTiming,window,sti
     if waitForTrigger:
         triggered = None
         while not triggered:
-            rdKeyCount, triggered = collect_response(rd=rd,
-                                                     kb=kb,
-                                                     otherKeys=config['mritrigger']['sync'])
+            triggered = collect_response(rd=rd,
+                                         kb=kb,
+                                         td=td)
 
     if trialOns == 0:
         # If this is the start of a session or block
