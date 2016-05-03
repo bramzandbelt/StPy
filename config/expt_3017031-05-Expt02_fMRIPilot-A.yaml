@@ -780,11 +780,11 @@ experiment:
 ###############################################################################
 
 mritrigger:
-  enable: False
+  enable: True
   mode:
   TR: 2.00
   volumes: 100
-  sync: 's'
+  sync: 'a'
   skip: 0
   sound: False
 
