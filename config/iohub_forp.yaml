@@ -18,7 +18,7 @@ monitor_devices:
         #    For Linux and OS X, serial ports are usually specified as follows:
         #    /dev/cu.usbmodem1421
         #    To autodetect an ioSync, set to 'auto'.
-        port: COM1
+        port: COM2
 
         baud: 115200
 
