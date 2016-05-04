@@ -233,8 +233,8 @@ def collect_response(rd,kb, *args, **kwargs):
 
             print 'Trigger received: %s at time %f' % (tevKeys, tevTime)
 
-            if any([re.findall(key,tev._asdict()['key']) for key in triggerKeys]):
-                triggered = tev._asdict()['key']
+            if any([re.findall(key,tevKeys) for key in triggerKeys]):
+                triggered = True
                 return triggered
 
         return triggered
