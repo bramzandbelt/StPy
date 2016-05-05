@@ -153,20 +153,12 @@ if __name__ == "__main__":
         respDevConfigFile = os.path.normcase(os.path.join(configDir,
                                 rdConfigFiles[dlg_info.values()[0]]))
 
-        triggerConfigFile = os.path.normcase(os.path.join(configDir,
-                                                           'iohub_trigger.yaml'))
-
         combinedConfigFile = os.path.normcase(os.path.join(configDir,
                                                            'iohub_config.yaml'))
 
         ExperimentRuntime.mergeConfigurationFiles(baseConfigFile,
                                                   respDevConfigFile,
                                                   combinedConfigFile)
-
-        ExperimentRuntime.mergeConfigurationFiles(combinedConfigFile,
-                                                  triggerConfigFile,
-                                                  combinedConfigFile)
-
 
         # Determine which experiment configuration file to use
         # ---------------------------------------------------------------------

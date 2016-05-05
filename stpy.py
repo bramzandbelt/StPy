@@ -18,6 +18,8 @@ from pandas import DataFrame
 # This is to enable printing of all data frame columns
 pd.set_option('display.max_columns', None)
 
+import serial
+
 from pprint import pprint
 import re
 
@@ -215,29 +217,6 @@ def collect_response(rd,kb, *args, **kwargs):
                 if any([re.findall(key,ev._asdict()['key']) for key in otherKeys]):
                     otherKeysPressed = ev._asdict()['key']
                     return keyCount, otherKeysPressed
-
-    # Check if 'td' is a keyword argument and if a trigger is received
-    # -------------------------------------------------------------------------
-    if 'td' in kwargs:
-
-        td              = kwargs.get('td')
-        triggerKeys     = td['settings']['triggerKeys']
-        tKeyKey         = td['settings']['keyKey']
-        tTimeKey        = td['settings']['timeKey']
-
-        tdEvents        = td['client'].getEvents()
-
-        for tev in tdEvents:
-            tevKeys = tev._asdict()[tKeyKey]
-            tevTime = tev._asdict()[tTimeKey]
-
-            print 'Trigger received: %s at time %f' % (tevKeys, tevTime)
-
-            if any([re.findall(key,tevKeys) for key in triggerKeys]):
-                triggered = True
-                return triggered
-
-        return triggered
 
     # For each key, only response times of first two events are stored
     if isinstance(log,pd.DataFrame):
@@ -1841,9 +1820,17 @@ def init_config(runtime,modDir):
         config['apparatus']['rd']['client'] = hub.getDevice('responsedevice')
 
     if config['mritrigger']['enable']:
-        config['apparatus']['td']['client'] = hub.getDevice('trigger')
+        trigger_port = config['mritrigger']['port']
+        trigger_baud = config['mritrigger']['baud']
+        config['apparatus']['td']['client'] = serial.Serial(trigger_port, trigger_baud, timeout=1)
+        config['apparatus']['td']['settings'] = {'triggerKeys': config['mritrigger']['sync']}
+
+        # Print and clear events from trigger port
+        print(config['apparatus']['td']['client'].readlines())
+
     else:
         config['apparatus']['td']['client'] = None
+        config['apparatus']['td']['settings'] = None
 
     # Keyboard settings
     # -------------------------------------------------------------------------
@@ -1872,26 +1859,6 @@ def init_config(runtime,modDir):
     # Enable event reporting and clear all recorded events
     rd.enableEventReporting()
     rd.clearEvents()
-
-    # Trigger device settings
-    # -------------------------------------------------------------------------
-    if config['mritrigger']['enable']:
-        td = config['apparatus']['td']['client']
-        tdClass = td.getIOHubDeviceClass()
-        config['apparatus']['td']['settings'] = {'class': tdClass,
-                                                 'triggerKeys': config['mritrigger']['sync'],
-                                                 'keyKey': keyKey[tdClass],
-                                                 'timeKey': timeKey[tdClass]}
-
-        # Enable event reporting and clear all recorded events
-
-        td.enableEventReporting()
-        td.clearEvents()
-    else:
-        config['apparatus']['td']['settings'] =  {'class': None,
-                                                 'triggerKeys': None,
-                                                 'keyKey': None,
-                                                 'timeKey': None}
 
     ###########################################################################
     # WINDOW
@@ -2618,10 +2585,19 @@ def run_trial(config,waitForTrigger,trialOns,hub,trialLog,trialTiming,window,sti
     # -------------------------------------------------------------------------
     if waitForTrigger:
         triggered = None
+        triggerKeys = td['settings']['triggerKeys']
+
+        # Clear buffer
+        td['client'].readlines()
+
         while not triggered:
-            triggered = collect_response(rd=rd,
-                                         kb=kb,
-                                         td=td)
+            triggerEvents = td['client'].readline()
+
+            for ev in triggerEvents:
+                print 'Trigger received: %s' % (ev)
+
+                if any([re.findall(key,ev) for key in triggerKeys]):
+                    triggered = True
 
     if trialOns == 0:
         # If this is the start of a session or block
