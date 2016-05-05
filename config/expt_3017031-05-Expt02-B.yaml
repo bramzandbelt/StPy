@@ -788,8 +788,8 @@ mritrigger:
   skip: 0
   sound: False
   # For Mac OS X or Linux, something like: /dev/tty.usbmodem1421
-  # For Windows, something like: 1 (i.e. number of COM port)
-  port: 3
+  # For Windows, something like: COM1
+  port: 'COM3'
   baud: 115200
 
 ###############################################################################
