@@ -1822,7 +1822,7 @@ def init_config(runtime,modDir):
     if config['mritrigger']['enable']:
         trigger_port = config['mritrigger']['port']
         trigger_baud = config['mritrigger']['baud']
-        config['apparatus']['td']['client'] = serial.Serial(trigger_port, trigger_baud, timeout=1)
+        config['apparatus']['td']['client'] = serial.Serial(trigger_port, trigger_baud, timeout=0.001)
         config['apparatus']['td']['settings'] = {'triggerKeys': config['mritrigger']['sync']}
 
         # Print and clear events from trigger port
