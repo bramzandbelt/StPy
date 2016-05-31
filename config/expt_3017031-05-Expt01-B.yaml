@@ -34,7 +34,7 @@ ethics_protocol_id: 'NL45659.091.14'
 #
 #   Consider here referring to version A and B (randomization)
 #
-version: 'A'
+version: 'B'
 
 # description: string
 #
@@ -300,66 +300,66 @@ instruction:
         #
         content:
             - data/3017031-05-Expt01/instructions/instruction_practice_general.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess0_title.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess0_practice_stage01_00.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess0_practice_stage01_01.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess0_practice_stage01_02.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess0_practice_stage02_00.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess0_practice_stage02_01.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess0_practice_stage02_02.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess0_practice_stage02_03.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess0_practice_stage02_04.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess0_practice_stage02_05.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess0_practice_stage02_06.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess0_practice_stage02_07.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess1_title.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess1_practice_stage01_00.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess1_practice_stage01_01.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess1_practice_stage01_02.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess1_practice_stage02_00.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess1_practice_stage02_01.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess1_practice_stage02_02.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess1_practice_stage02_03.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess1_practice_stage02_04.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess1_practice_stage02_05.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess1_practice_stage02_06.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess1_practice_stage02_07.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess2_title.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess2_practice_stage01_00.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess2_practice_stage01_01.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess2_practice_stage01_02.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess2_practice_stage02_00.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess2_practice_stage02_01.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess2_practice_stage02_02.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess2_practice_stage02_03.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess2_practice_stage02_04.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess2_practice_stage02_05.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess2_practice_stage02_06.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess2_practice_stage02_07.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess3_title.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess3_practice_stage01_00.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess3_practice_stage01_01.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess3_practice_stage01_02.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess3_practice_stage02_00.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess3_practice_stage02_01.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess3_practice_stage02_02.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess3_practice_stage02_03.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess3_practice_stage02_04.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess3_practice_stage02_05.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess3_practice_stage02_06.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess3_practice_stage02_07.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess4_title.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess4_practice_stage01_00.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess4_practice_stage01_01.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess4_practice_stage01_02.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess4_practice_stage02_00.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess4_practice_stage02_01.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess4_practice_stage02_02.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess4_practice_stage02_03.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess4_practice_stage02_04.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess4_practice_stage02_05.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess4_practice_stage02_06.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess4_practice_stage02_07.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess0_title.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess0_practice_stage01_00.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess0_practice_stage01_01.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess0_practice_stage01_02.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess0_practice_stage02_00.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess0_practice_stage02_01.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess0_practice_stage02_02.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess0_practice_stage02_03.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess0_practice_stage02_04.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess0_practice_stage02_05.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess0_practice_stage02_06.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess0_practice_stage02_07.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess1_title.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess1_practice_stage01_00.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess1_practice_stage01_01.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess1_practice_stage01_02.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess1_practice_stage02_00.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess1_practice_stage02_01.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess1_practice_stage02_02.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess1_practice_stage02_03.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess1_practice_stage02_04.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess1_practice_stage02_05.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess1_practice_stage02_06.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess1_practice_stage02_07.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess2_title.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess2_practice_stage01_00.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess2_practice_stage01_01.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess2_practice_stage01_02.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess2_practice_stage02_00.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess2_practice_stage02_01.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess2_practice_stage02_02.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess2_practice_stage02_03.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess2_practice_stage02_04.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess2_practice_stage02_05.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess2_practice_stage02_06.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess2_practice_stage02_07.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess3_title.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess3_practice_stage01_00.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess3_practice_stage01_01.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess3_practice_stage01_02.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess3_practice_stage02_00.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess3_practice_stage02_01.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess3_practice_stage02_02.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess3_practice_stage02_03.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess3_practice_stage02_04.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess3_practice_stage02_05.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess3_practice_stage02_06.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess3_practice_stage02_07.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess4_title.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess4_practice_stage01_00.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess4_practice_stage01_01.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess4_practice_stage01_02.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess4_practice_stage02_00.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess4_practice_stage02_01.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess4_practice_stage02_02.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess4_practice_stage02_03.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess4_practice_stage02_04.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess4_practice_stage02_05.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess4_practice_stage02_06.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess4_practice_stage02_07.jpeg
 
         # ori: int
         #
@@ -403,16 +403,16 @@ instruction:
         #
         content:
             - data/3017031-05-Expt01/instructions/instruction_experiment_general.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess0_experiment_00.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess0_experiment_01.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess1_experiment_00.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess1_experiment_01.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess2_experiment_00.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess2_experiment_01.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess3_experiment_00.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess3_experiment_01.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess4_experiment_00.jpeg
-            - data/3017031-05-Expt01/instructions/instruction_A_sess4_experiment_01.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess0_experiment_00.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess0_experiment_01.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess1_experiment_00.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess1_experiment_01.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess2_experiment_00.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess2_experiment_01.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess3_experiment_00.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess3_experiment_01.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess4_experiment_00.jpeg
+            - data/3017031-05-Expt01/instructions/instruction_B_sess4_experiment_01.jpeg
 
         # ori: int
         #
@@ -636,7 +636,7 @@ stimConfig:
         # N.B. Unicode characters can be used as TextStim stimuli, but they
         # should be between double-quotes (e.g. ["\u2666","\u2665"]).
         #
-        content: [a,b,d,f,g,h,i,j,k,l]
+        content: [b,a,f,d,h,g,j,i,l,k]
         font: PJ Hiragana
         color: [255,255,255]
         opacity: 1
@@ -670,8 +670,8 @@ stimConfig:
         # N.B. Unicode characters can be used as TextStim stimuli, but they
         # should be between double-quotes (e.g. ["\u2666","\u2665"]).
         #
-        content: ["\u2666","\u2665","\u2660","\u2663"]
-        color: [[255,116,0],[0,255,255],[255,255,0],[169,13,255]]
+        content: ["\u2663","\u2660","\u2665","\u2666"]
+        color: [[169,13,255],[255,255,0],[0,255,255],[255,116,0]]
         opacity: 0.8
         font: Arial
         height: 3
@@ -815,7 +815,7 @@ practice:
     # trialListFile
     #
     # Path to the .csv-file containing the trial list for the practice blocks
-    trialListFile: data/3017031-05-Expt01/csvfiles/trialList_practice_taskVersionA.csv
+    trialListFile: data/3017031-05-Expt01/csvfiles/trialList_practice_taskVersionB.csv
     randomizeBlocks: False
     randomizeTrials: False
 
@@ -828,7 +828,7 @@ experiment:
     #
     # Path to the .csv-file containing the trial list for the experimental
     # blocks
-    trialListFile: data/3017031-05-Expt01/csvfiles/trialList_experiment_taskVersionA.csv
+    trialListFile: data/3017031-05-Expt01/csvfiles/trialList_experiment_taskVersionB.csv
     randomizeBlocks: False
     randomizeTrials: False
 
@@ -956,7 +956,7 @@ feedback:
                 enable: True
                 criterion: [[20,100],[20,100],[20,100],[80,100]]
                 feedbackPos: ['Well done!','Well done!','Well done!','Well done!']
-                feedbackNeg: ["Remember to stop left when you see \u2666","Remember to stop right when you see \u2665","Remember to stop left & right when you see \u2660","Remember to respond when you see \u2663"]
+                feedbackNeg: ["Remember to stop left when you see \u2663","Remember to stop right when you see \u2660","Remember to stop left & right when you see \u2665","Remember to respond when you see \u2666"]
             s1MeanRt:
                 enable: True
                 criterion: [0, 650]
