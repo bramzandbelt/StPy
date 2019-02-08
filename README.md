@@ -9,7 +9,7 @@ StPy is stimulus presentation code for running various forms of the stop-signal 
 
 ### Requirements
 
-* [PsychoPy](http://www.psychopy.org/)
+* [PsychoPy (v.1.83.04)](https://github.com/psychopy/psychopy/releases/tag/1.83.04)
 
 ### Installation
 
@@ -19,7 +19,6 @@ If you have git installed, open a terminal and run the following command
 ```
 git clone https://github.com/bramzandbelt/StPy.git
 ```
-
 If you don't have git installed, you can also [download the code as a ZIP file](https://github.com/bramzandbelt/StPy/archive/master.zip).
 
 ### Usage
